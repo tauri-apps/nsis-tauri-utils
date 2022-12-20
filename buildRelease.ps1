@@ -1,0 +1,1 @@
+msbuild ./SemverCompare.sln /p:Configuration=Release
