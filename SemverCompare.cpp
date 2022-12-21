@@ -2,6 +2,7 @@
 #include <strsafe.h>
 #include <tchar.h>
 #include <windows.h>
+#include <optional>
 #include <string>
 
 #include "include\nsis\pluginapi.h"
@@ -30,8 +31,16 @@ extern "C" void __declspec(dllexport) SemverCompare(HWND hwndParent,
   std::string ver1(ver1w.begin(), ver1w.end());
   std::string ver2(ver2w.begin(), ver2w.end());
 
-  semver::version v1 = semver::from_string(ver1);
-  semver::version v2 = semver::from_string(ver2);
+  std::optional<semver::version> v1 = semver::from_string_noexcept(ver1);
+  std::optional<semver::version> v2 = semver::from_string_noexcept(ver2);
 
-  pushint(v1.compare(v2));
+  if (v1.has_value() && !v2.has_value()) {
+    pushint(1);
+  } else if (!v1.has_value() && v2.has_value()) {
+    pushint(-1);
+  } else if (!v1.has_value() && !v2.has_value()) {
+    pushint(0);
+  } else {
+    pushint(v1.value().compare(v2.value()));
+  }
 }
