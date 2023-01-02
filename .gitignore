@@ -1,6 +1,4 @@
-Release/
-Debug/
-.vscode/
-.vs/
-*.user
+/target
+/Cargo.lock
 *.exe
+.vscode/
