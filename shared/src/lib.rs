@@ -1,3 +1,4 @@
+#![allow(clippy::missing_safety_doc)]
 #![allow(non_camel_case_types)]
 
 use std::{
@@ -50,6 +51,7 @@ pub unsafe fn pushstring(s: impl AsRef<OsStr>) {
     *G_STACKTOP = th;
 }
 
+#[allow(clippy::result_unit_err)]
 pub unsafe fn popstring() -> Result<String, ()> {
     if G_STACKTOP.is_null() || (*G_STACKTOP).is_null() {
         return Err(());

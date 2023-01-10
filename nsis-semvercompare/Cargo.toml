@@ -1,0 +1,14 @@
+[package]
+name = "nsis-semvercompare"
+version = "0.0.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+shared = { path = "../shared" }
+windows-sys.workspace = true
+
+semver = "1.0.16"

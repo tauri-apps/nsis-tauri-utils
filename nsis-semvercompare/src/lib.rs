@@ -1,9 +1,9 @@
-mod utils;
+#![allow(clippy::missing_safety_doc)]
 
 use std::str::FromStr;
 
 use semver::Version;
-use utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
+use shared::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use windows_sys::Win32::Foundation::HWND;
 
 #[no_mangle]
@@ -23,8 +23,8 @@ pub unsafe extern "C" fn SemverCompare(
 }
 
 fn semver_compare(v1: &str, v2: &str) -> i32 {
-    let v1 = Version::from_str(&v1);
-    let v2 = Version::from_str(&v2);
+    let v1 = Version::from_str(v1);
+    let v2 = Version::from_str(v2);
 
     let (v1, v2) = match (v1, v2) {
         (Ok(_), Err(_)) => return 1,
@@ -33,6 +33,7 @@ fn semver_compare(v1: &str, v2: &str) -> i32 {
         (Ok(v1), Ok(v2)) => (v1, v2),
     };
 
+    #[allow(clippy::comparison_chain)]
     if v1 > v2 {
         1
     } else if v1 == v2 {
