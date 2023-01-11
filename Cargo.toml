@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "nsis-utils", "nsis-semvercompare", "nsis-process"
+    "nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download"
 ]
 resolver = "2"
 

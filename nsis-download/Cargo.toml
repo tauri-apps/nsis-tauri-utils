@@ -1,0 +1,14 @@
+[package]
+name = "nsis-download"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+nsis-utils = { path = "../nsis-utils" }
+windows-sys.workspace = true
+
+ureq = { version = "2", default-features = false, features = ["tls"] }

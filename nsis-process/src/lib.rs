@@ -28,7 +28,7 @@ pub unsafe extern "C" fn FindProcess(
     if !get_processes(&name).is_empty() {
         pushint(0);
     } else {
-        pushint(603);
+        pushint(1);
     }
 }
 
@@ -46,7 +46,7 @@ pub unsafe extern "C" fn KillProcess(
     if get_processes(&name).into_iter().map(kill).all(|b| b) {
         pushint(0);
     } else {
-        pushint(602);
+        pushint(1);
     }
 }
 
@@ -114,9 +114,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn it_works() {
-        dbg!(get_processes("Blitz.exe"));
-        dbg!(get_processes("Blitz.exe").into_iter().map(kill).all(|b| b));
-        //todo!()
+    fn find_process() {
+        let processes = get_processes("explorer.exe");
+        dbg!(&processes);
+        assert!(!processes.is_empty());
+    }
+
+    #[test]
+    fn kill_process() {
+        let processes = get_processes("something_that_doesnt_exist.exe");
+        dbg!(&processes);
+        // TODO: maybe find some way to spawn a dummy process we can kill here?
+        // This will return true on empty iterators so it's basically no-op right now
+        assert!(processes.into_iter().map(kill).all(|b| b));
     }
 }
