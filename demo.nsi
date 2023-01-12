@@ -26,4 +26,7 @@ Section
     nsis_process::FindProcess "abcdef.exe"
     Pop $1
     DetailPrint $1
+    nsis_download::FindProcess "https://go.microsoft.com/fwlink/p/?LinkId=2124703" "wv2setup.exe"
+    Pop $1
+    DetailPrint $1
 SectionEnd

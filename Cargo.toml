@@ -1,8 +1,14 @@
 [workspace]
 members = [
-    "nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download"
+    "nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download", "nsis-tauri"
 ]
+default-members = ["nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download"]
 resolver = "2"
+
+[workspace.package]
+authors = ["Tauri Programme within the Commons Conservancy"]
+edition = "2021"
+license = "MIT or Apache-2.0"
 
 [workspace.dependencies.windows-sys]
 version = "0.42.0"

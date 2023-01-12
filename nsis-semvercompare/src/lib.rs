@@ -2,10 +2,14 @@
 
 use std::str::FromStr;
 
+#[cfg(feature = "dylib")]
 use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
-use semver::Version;
+#[cfg(feature = "dylib")]
 use windows_sys::Win32::Foundation::HWND;
 
+use semver::Version;
+
+#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn SemverCompare(
     _hwnd_parent: HWND,
@@ -22,7 +26,7 @@ pub unsafe extern "C" fn SemverCompare(
     pushint(ret);
 }
 
-fn semver_compare(v1: &str, v2: &str) -> i32 {
+pub fn semver_compare(v1: &str, v2: &str) -> i32 {
     let v1 = Version::from_str(v1);
     let v2 = Version::from_str(v2);
 

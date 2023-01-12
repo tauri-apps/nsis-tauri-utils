@@ -2,9 +2,9 @@
 
 use std::mem::size_of;
 
-use nsis_utils::{decode_wide, exdll_init, popstring, pushint, stack_t, wchar_t};
+use nsis_utils::decode_wide;
 use windows_sys::Win32::{
-    Foundation::{CloseHandle, HWND},
+    Foundation::CloseHandle,
     System::{
         Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
@@ -14,6 +14,12 @@ use windows_sys::Win32::{
     },
 };
 
+#[cfg(feature = "dylib")]
+use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
+#[cfg(feature = "dylib")]
+use windows_sys::Win32::Foundation::HWND;
+
+#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn FindProcess(
     _hwnd_parent: HWND,
@@ -32,6 +38,7 @@ pub unsafe extern "C" fn FindProcess(
     }
 }
 
+#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn KillProcess(
     _hwnd_parent: HWND,
@@ -43,14 +50,17 @@ pub unsafe extern "C" fn KillProcess(
 
     let name = popstring().unwrap();
 
-    if get_processes(&name).into_iter().map(kill).all(|b| b) {
+    let processes = get_processes(&name);
+
+    if !processes.is_empty() && processes.into_iter().map(kill).all(|b| b) {
         pushint(0);
     } else {
         pushint(1);
     }
 }
 
-/* #[no_mangle]
+/* #[cfg(feature = "dylib")]
+#[no_mangle]
 pub unsafe extern "C" fn CloseProcess(
     _hwnd_parent: HWND,
     string_size: u32,
@@ -62,7 +72,7 @@ pub unsafe extern "C" fn CloseProcess(
     todo!()
 } */
 
-fn kill(pid: u32) -> bool {
+pub fn kill(pid: u32) -> bool {
     unsafe {
         let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
         let success = TerminateProcess(handle, 1);
@@ -71,7 +81,7 @@ fn kill(pid: u32) -> bool {
     }
 }
 
-fn get_processes(name: &str) -> Vec<u32> {
+pub fn get_processes(name: &str) -> Vec<u32> {
     let mut processes = Vec::new();
 
     unsafe {
