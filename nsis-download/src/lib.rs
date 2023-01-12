@@ -21,7 +21,7 @@ pub unsafe extern "C" fn Download(
     pushint(status);
 }
 
-pub fn download_file(url: &str, path: &str) -> i32 {
+fn download_file(url: &str, path: &str) -> i32 {
     let path = Path::new(path);
     let _ = fs::remove_file(path);
     let _ = fs::create_dir_all(path.parent().unwrap_or_else(|| Path::new("./")));

@@ -66,7 +66,7 @@ pub unsafe extern "C" fn CloseProcess(
     todo!()
 } */
 
-pub fn kill(pid: u32) -> bool {
+fn kill(pid: u32) -> bool {
     unsafe {
         let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
         let success = TerminateProcess(handle, 1);
@@ -75,7 +75,7 @@ pub fn kill(pid: u32) -> bool {
     }
 }
 
-pub fn get_processes(name: &str) -> Vec<u32> {
+fn get_processes(name: &str) -> Vec<u32> {
     let mut processes = Vec::new();
 
     unsafe {

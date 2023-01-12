@@ -22,7 +22,7 @@ pub unsafe extern "C" fn SemverCompare(
     pushint(ret);
 }
 
-pub fn semver_compare(v1: &str, v2: &str) -> i32 {
+fn semver_compare(v1: &str, v2: &str) -> i32 {
     let v1 = Version::from_str(v1);
     let v2 = Version::from_str(v2);
 
