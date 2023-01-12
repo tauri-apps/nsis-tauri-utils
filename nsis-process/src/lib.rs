@@ -2,9 +2,10 @@
 
 use std::mem::size_of;
 
-use nsis_utils::decode_wide;
+use nsis_utils::{decode_wide, exdll_init, popstring, pushint, stack_t, wchar_t};
+
 use windows_sys::Win32::{
-    Foundation::CloseHandle,
+    Foundation::{CloseHandle, HWND},
     System::{
         Diagnostics::ToolHelp::{
             CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
@@ -14,12 +15,6 @@ use windows_sys::Win32::{
     },
 };
 
-#[cfg(feature = "dylib")]
-use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
-#[cfg(feature = "dylib")]
-use windows_sys::Win32::Foundation::HWND;
-
-#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn FindProcess(
     _hwnd_parent: HWND,
@@ -38,7 +33,6 @@ pub unsafe extern "C" fn FindProcess(
     }
 }
 
-#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn KillProcess(
     _hwnd_parent: HWND,

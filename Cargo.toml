@@ -2,7 +2,6 @@
 members = [
     "nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download", "nsis-tauri"
 ]
-default-members = ["nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download"]
 resolver = "2"
 
 [workspace.package]

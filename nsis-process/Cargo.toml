@@ -11,7 +11,3 @@ crate-type = ["lib", "cdylib"]
 [dependencies]
 nsis-utils = { path = "../nsis-utils" }
 windows-sys.workspace = true
-
-[features]
-default = ["dylib"]
-dylib = []

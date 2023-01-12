@@ -13,7 +13,3 @@ nsis-utils = { path = "../nsis-utils" }
 windows-sys.workspace = true
 
 ureq = { version = "2", default-features = false, features = ["tls"] }
-
-[features]
-default = ["dylib"]
-dylib = []

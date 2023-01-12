@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 nsis-utils = { path = "../nsis-utils" }
-nsis-download = { path = "../nsis-download", default-features = false }
-nsis-process = { path = "../nsis-process", default-features = false }
-nsis-semvercompare = { path = "../nsis-semvercompare", default-features = false }
+nsis-download = { path = "../nsis-download", default-features = true }
+nsis-process = { path = "../nsis-process", default-features = true }
+nsis-semvercompare = { path = "../nsis-semvercompare", default-features = true }
 windows-sys.workspace = true

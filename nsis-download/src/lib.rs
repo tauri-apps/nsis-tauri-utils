@@ -2,12 +2,9 @@
 
 use std::{fs, io, path::Path};
 
-#[cfg(feature = "dylib")]
 use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
-#[cfg(feature = "dylib")]
 use windows_sys::Win32::Foundation::HWND;
 
-#[cfg(feature = "dylib")]
 #[no_mangle]
 pub unsafe extern "C" fn Download(
     _hwnd_parent: HWND,
