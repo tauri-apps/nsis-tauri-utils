@@ -33,15 +33,10 @@ fn semver_compare(v1: &str, v2: &str) -> i32 {
         (Ok(v1), Ok(v2)) => (v1, v2),
     };
 
-    #[allow(clippy::comparison_chain)]
-    if v1 > v2 {
-        1
-    } else if v1 == v2 {
-        0
-    } else if v1 < v2 {
-        -1
-    } else {
-        0
+    match v1.cmp(&v2) {
+        Ordering::Greater => 1,
+        Ordering::Equal => 0,
+        Ordering::Less => -1,
     }
 }
 
