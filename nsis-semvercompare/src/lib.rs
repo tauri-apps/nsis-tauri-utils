@@ -1,6 +1,6 @@
 #![allow(clippy::missing_safety_doc)]
 
-use std::str::FromStr;
+use std::{cmp::Ordering, str::FromStr};
 
 use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use semver::Version;
