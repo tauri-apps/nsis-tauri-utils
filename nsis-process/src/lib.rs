@@ -61,19 +61,6 @@ pub unsafe extern "C" fn KillProcess(
     }
 }
 
-/* #[cfg(feature = "dylib")]
-#[no_mangle]
-pub unsafe extern "C" fn CloseProcess(
-    _hwnd_parent: HWND,
-    string_size: u32,
-    variables: *mut wchar_t,
-    stacktop: *mut *mut stack_t,
-) {
-    exdll_init(string_size, variables, stacktop);
-
-    todo!()
-} */
-
 fn kill(pid: u32) -> bool {
     unsafe {
         let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
