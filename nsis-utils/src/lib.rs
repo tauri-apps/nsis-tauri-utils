@@ -25,6 +25,12 @@ pub unsafe fn exdll_init(string_size: u32, variables: *mut wchar_t, stacktop: *m
 
 pub type wchar_t = i32;
 
+#[derive(Debug)]
+pub enum Error {
+    InvalidStackError,
+    InvalidUnicode,
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct stack_t {
@@ -51,16 +57,18 @@ pub unsafe fn pushstring(s: impl AsRef<OsStr>) {
     *G_STACKTOP = th;
 }
 
-#[allow(clippy::result_unit_err)]
-pub unsafe fn popstring() -> Result<String, ()> {
+pub unsafe fn popstring() -> Result<String, Error> {
     if G_STACKTOP.is_null() || (*G_STACKTOP).is_null() {
-        return Err(());
+        return Err(Error::InvalidStackError);
     }
 
     let mut string_wide: Vec<u16> = vec![0; G_STRINGSIZE as _];
     let th: *mut stack_t = *G_STACKTOP;
     lstrcpyW(string_wide.as_mut_ptr(), (*th).text.as_ptr() as _);
-    let string = decode_wide(&string_wide).to_str().ok_or(())?.to_string();
+    let string = decode_wide(&string_wide)
+        .to_str()
+        .ok_or(Error::InvalidUnicode)?
+        .to_string();
     *G_STACKTOP = (*th).next;
     GlobalFree(th as _);
 
