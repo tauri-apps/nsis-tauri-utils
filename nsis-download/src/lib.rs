@@ -1,10 +1,13 @@
-#![allow(clippy::missing_safety_doc)]
-
 use std::{fs, io, path::Path};
 
 use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use windows_sys::Win32::Foundation::HWND;
 
+/// Download a file from an URL to a path.
+///
+/// # Safety
+///
+/// This function always expects 2 strings on the stack ($1: url, $2: path) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn Download(
     _hwnd_parent: HWND,

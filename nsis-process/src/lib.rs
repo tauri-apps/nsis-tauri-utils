@@ -1,5 +1,3 @@
-#![allow(clippy::missing_safety_doc)]
-
 use std::mem::size_of;
 
 use nsis_utils::{decode_wide, exdll_init, popstring, pushint, stack_t, wchar_t};
@@ -15,6 +13,11 @@ use windows_sys::Win32::{
     },
 };
 
+/// Test if there is a running process with the given name. The input and process names are case-insensitive.
+///
+/// # Safety
+///
+/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn FindProcess(
     _hwnd_parent: HWND,
@@ -33,6 +36,11 @@ pub unsafe extern "C" fn FindProcess(
     }
 }
 
+/// Kill all running process with the given name. The input and process names are case-insensitive.
+///
+/// # Safety
+///
+/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn KillProcess(
     _hwnd_parent: HWND,

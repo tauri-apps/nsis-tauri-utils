@@ -1,11 +1,14 @@
-#![allow(clippy::missing_safety_doc)]
-
 use std::{cmp::Ordering, str::FromStr};
 
 use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use semver::Version;
 use windows_sys::Win32::Foundation::HWND;
 
+/// Compare 2 given semver versions.
+///
+/// # Safety
+///
+/// This function always expects 2 strings on the stack ($1: v1, $2: v2) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn SemverCompare(
     _hwnd_parent: HWND,
