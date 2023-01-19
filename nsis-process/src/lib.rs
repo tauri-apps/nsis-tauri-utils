@@ -83,15 +83,7 @@ fn get_processes(name: &str) -> Vec<u32> {
 
         let mut process = PROCESSENTRY32W {
             dwSize: size_of::<PROCESSENTRY32W>() as u32,
-            cntUsage: 0,
-            th32ProcessID: 0,
-            th32DefaultHeapID: 0,
-            th32ModuleID: 0,
-            cntThreads: 0,
-            th32ParentProcessID: 0,
-            pcPriClassBase: 0,
-            dwFlags: 0,
-            szExeFile: [0; 260],
+            ..std::mem::zeroed()
         };
 
         if Process32FirstW(handle, &mut process) != 0 {
