@@ -1,5 +1,5 @@
 [package]
-name = "nsis-tauri"
+name = "nsis-tauri-utils"
 version = "0.1.0"
 authors.workspace = true
 edition.workspace = true
