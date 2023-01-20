@@ -1,11 +1,14 @@
-mod utils;
+use std::{cmp::Ordering, str::FromStr};
 
-use std::str::FromStr;
-
+use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use semver::Version;
-use utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use windows_sys::Win32::Foundation::HWND;
 
+/// Compare 2 given semver versions.
+///
+/// # Safety
+///
+/// This function always expects 2 strings on the stack ($1: v1, $2: v2) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn SemverCompare(
     _hwnd_parent: HWND,
@@ -23,8 +26,8 @@ pub unsafe extern "C" fn SemverCompare(
 }
 
 fn semver_compare(v1: &str, v2: &str) -> i32 {
-    let v1 = Version::from_str(&v1);
-    let v2 = Version::from_str(&v2);
+    let v1 = Version::from_str(v1);
+    let v2 = Version::from_str(v2);
 
     let (v1, v2) = match (v1, v2) {
         (Ok(_), Err(_)) => return 1,
@@ -33,14 +36,10 @@ fn semver_compare(v1: &str, v2: &str) -> i32 {
         (Ok(v1), Ok(v2)) => (v1, v2),
     };
 
-    if v1 > v2 {
-        1
-    } else if v1 == v2 {
-        0
-    } else if v1 < v2 {
-        -1
-    } else {
-        0
+    match v1.cmp(&v2) {
+        Ordering::Greater => 1,
+        Ordering::Equal => 0,
+        Ordering::Less => -1,
     }
 }
 
