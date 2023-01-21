@@ -16,7 +16,7 @@
                     "pipe": true
                 },
                 {
-                    "command": "powershell -Command 'Get-FileHash -Algorithm SHA1 \"target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll\" | Select -ExpandProperty Hash'",
+                    "command": "powershell -Command 'Get-FileHash -Algorithm SHA1 \"../target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll\" | Select -ExpandProperty Hash'",
                     "dryRunCommand": true,
                     "pipe": true
                 },
