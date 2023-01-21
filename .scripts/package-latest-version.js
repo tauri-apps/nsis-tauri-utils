@@ -32,7 +32,6 @@ https.get("https://api.github.com/repos/tauri-apps/nsis-tauri-utils/releases", o
 
     response.on('end', function () {
         const data = JSON.parse(chunks.join(''))
-        console.log(data);
         const versions = data.filter(t => t.tag_name.startsWith(`${packageName}-v${target}`))
         console.log(versions.length ? versions[0].tag_name : '0.0.0')
 
