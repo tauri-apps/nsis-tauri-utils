@@ -1,6 +1,6 @@
 use std::{cmp::Ordering, str::FromStr};
 
-use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
+use pluginapi::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use semver::Version;
 use windows_sys::Win32::Foundation::HWND;
 

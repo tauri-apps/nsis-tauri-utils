@@ -1,0 +1,22 @@
+[package]
+name = "nsis-download"
+version = "0.1.0"
+
+[package.authors]
+workspace = true
+
+[package.edition]
+workspace = true
+
+[package.license]
+workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+pluginapi = { path = "../pluginapi" }
+ureq = { version = "2", default-features = false, features = ["tls"] }
+
+[dependencies.windows-sys]
+workspace = true

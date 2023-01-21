@@ -1,6 +1,6 @@
 use std::{fs, io, path::Path};
 
-use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
+use pluginapi::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use windows_sys::Win32::Foundation::HWND;
 
 /// Download a file from an URL to a path.

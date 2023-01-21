@@ -1,7 +1,5 @@
 [workspace]
-members = [
-    "nsis-utils", "nsis-semvercompare", "nsis-process", "nsis-download", "nsis-tauri-utils"
-]
+members = [ "crates/*" ]
 resolver = "2"
 
 [workspace.package]

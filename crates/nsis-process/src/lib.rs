@@ -1,6 +1,6 @@
 use std::mem::size_of;
 
-use nsis_utils::{decode_wide, exdll_init, popstring, pushint, stack_t, wchar_t};
+use pluginapi::{decode_wide, exdll_init, popstring, pushint, stack_t, wchar_t};
 
 use windows_sys::Win32::{
     Foundation::{CloseHandle, HWND},

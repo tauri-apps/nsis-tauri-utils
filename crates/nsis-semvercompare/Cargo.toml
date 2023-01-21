@@ -15,7 +15,7 @@ version = "0.1.0"
 crate-type = [ "rlib", "cdylib" ]
 
 [dependencies]
-nsis-utils = { path = "../nsis-utils" }
+pluginapi = { path = "../pluginapi" }
 semver = "1.0.16"
 
   [dependencies.windows-sys]

@@ -1,0 +1,21 @@
+[package]
+name = "nsis-process"
+version = "0.1.0"
+
+[package.authors]
+workspace = true
+
+[package.edition]
+workspace = true
+
+[package.license]
+workspace = true
+
+[lib]
+crate-type = ["rlib", "cdylib"]
+
+[dependencies]
+pluginapi = { path = "../pluginapi" }
+
+[dependencies.windows-sys]
+workspace = true
