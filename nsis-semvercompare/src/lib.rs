@@ -4,11 +4,11 @@ use nsis_utils::{exdll_init, popstring, pushint, stack_t, wchar_t};
 use semver::Version;
 use windows_sys::Win32::Foundation::HWND;
 
-/// Compare 2 given semver versions.
+/// Compare two semantic versions.
 ///
 /// # Safety
 ///
-/// This function always expects 2 strings on the stack ($1: v1, $2: v2) and will panic otherwise.
+/// This function always expects 2 strings on the stack ($1: version1, $2: version2) and will panic otherwise.
 #[no_mangle]
 pub unsafe extern "C" fn SemverCompare(
     _hwnd_parent: HWND,
