@@ -4,7 +4,7 @@
     "pkgManagers": {
         "rust": {
             "version": true,
-            "getPublishedVersion": "node ../.scripts/package-latest-version.js ${ pkgFile.pkg.name } ${ pkgFile.pkg.version }",
+            "getPublishedVersion": "node ../.scripts/package-latest-version.js ${ pkgFile.name } ${ pkgFile.version }",
             "publish": [
                 {
                     "command": "cargo build --release",
