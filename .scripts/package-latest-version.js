@@ -19,7 +19,7 @@ const options = {
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        // "Authorization": `Bearer <${process.env["GITHUB_TOKEN"]}>`,
+        "Authorization": `Bearer <${process.env["GITHUB_TOKEN"]}>`,
         'User-Agent': 'tauri (https://github.com/tauri-apps/nsis-tauri-utils)'
     }
 }
