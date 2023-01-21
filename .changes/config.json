@@ -11,7 +11,7 @@
                     "dryRunCommand": true
                 },
                 {
-                    "command": "echo 'SHA1: `",
+                    "command": "echo 'SHA1: `'",
                     "dryRunCommand": true,
                     "pipe": true
                 },
