@@ -1,12 +1,18 @@
 [package]
 name = "nsis-tauri-utils"
-version = "0.0.0"
-authors.workspace = true
-edition.workspace = true
-license.workspace = true
+version = "0.1.0"
+
+  [package.authors]
+  workspace = true
+
+  [package.edition]
+  workspace = true
+
+  [package.license]
+  workspace = true
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = [ "cdylib" ]
 
 [dependencies]
 nsis-download = { path = "../nsis-download" }
