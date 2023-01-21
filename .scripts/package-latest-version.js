@@ -19,7 +19,7 @@ const options = {
     headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json',
-        "Authorization": `Bearer <${process.env["GITHUB_TOKEN"]}>`,
+        "Authorization": process.env["GITHUB_TOKEN"] ? `Bearer <${process.env["GITHUB_TOKEN"]}>` : null,
         'User-Agent': 'tauri (https://github.com/tauri-apps/nsis-tauri-utils)'
     }
 }
@@ -32,6 +32,7 @@ https.get("https://api.github.com/repos/tauri-apps/nsis-tauri-utils/releases", o
 
     response.on('end', function () {
         const data = JSON.parse(chunks.join(''))
+        console.log(data);
         const versions = data.filter(t => t.tag_name.startsWith(`${packageName}-v${target}`))
         console.log(versions.length ? versions[0].tag_name : '0.0.0')
 
