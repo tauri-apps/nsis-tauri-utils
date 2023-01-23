@@ -149,11 +149,7 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
 
     let res = io::copy(&mut reader, &mut file);
 
-    if res.is_err() {
-        1
-    } else {
-        0
-    }
+    i32::from(res.is_err())
 }
 
 #[cfg(test)]
