@@ -15,8 +15,9 @@ workspace = true
 crate-type = ["rlib", "cdylib"]
 
 [dependencies]
-pluginapi = { path = "../pluginapi" }
+pluginapi.workspace = true
 ureq = { version = "2", default-features = false, features = ["tls"] }
+progress-streams = "1.1"
 
 [dependencies.windows-sys]
 workspace = true

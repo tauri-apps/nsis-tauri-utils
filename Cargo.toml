@@ -1,5 +1,5 @@
 [workspace]
-members = [ "crates/*" ]
+members = ["crates/*"]
 resolver = "2"
 
 [workspace.package]
@@ -7,9 +7,20 @@ authors = ["Tauri Programme within the Commons Conservancy"]
 edition = "2021"
 license = "MIT or Apache-2.0"
 
+[workspace.dependencies]
+pluginapi = { path = "./crates/pluginapi" }
+
 [workspace.dependencies.windows-sys]
 version = "0.45.0"
-features = ["Win32_Foundation", "Win32_Globalization", "Win32_System_Diagnostics_ToolHelp", "Win32_System_Memory", "Win32_System_Threading"]
+features = [
+    "Win32_Foundation",
+    "Win32_Globalization",
+    "Win32_System_Diagnostics_ToolHelp",
+    "Win32_System_Memory",
+    "Win32_System_Threading",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Controls",
+]
 
 [profile.release]
 codegen-units = 1
