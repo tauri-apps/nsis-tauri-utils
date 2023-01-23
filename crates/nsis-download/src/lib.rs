@@ -7,8 +7,9 @@ use windows_sys::Win32::{
     UI::{
         Controls::{PBM_SETPOS, PROGRESS_CLASSW, WC_STATICW},
         WindowsAndMessaging::{
-            CreateWindowExW, FindWindowExW, SendMessageW, SetWindowTextW, WM_GETFONT, WM_SETFONT,
-            WS_CHILD, WS_VISIBLE,
+            CreateWindowExW, FindWindowExW, GetWindowLongPtrW, SendMessageW, SetWindowPos,
+            SetWindowTextW, ShowWindow, GWL_STYLE, SWP_FRAMECHANGED, SWP_NOMOVE, SWP_NOSIZE,
+            SW_HIDE, WM_GETFONT, WM_SETFONT, WS_CHILD, WS_VISIBLE,
         },
     },
 };
@@ -38,8 +39,10 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
     let mut progress_bar = None;
     let mut progress_text = None;
     let mut downloading_text = None;
+    let mut details_section = None;
+    let mut childwnd = 0;
     if hwnd_parent != 0 {
-        let childwnd = unsafe {
+        childwnd = unsafe {
             let class = pluginapi::encode_wide("#32770");
             FindWindowExW(hwnd_parent, 0, class.as_ptr(), std::ptr::null())
         };
@@ -52,7 +55,7 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
                     std::ptr::null(),
                     WS_CHILD | WS_VISIBLE,
                     0,
-                    100,
+                    75,
                     400,
                     18,
                     childwnd,
@@ -67,7 +70,7 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
                     std::ptr::null(),
                     WS_CHILD | WS_VISIBLE,
                     0,
-                    118,
+                    75 + 20,
                     400,
                     18,
                     childwnd,
@@ -82,7 +85,7 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
                     std::ptr::null(),
                     WS_CHILD | WS_VISIBLE,
                     0,
-                    140,
+                    75 + 20 + 18,
                     400,
                     18,
                     childwnd,
@@ -118,22 +121,55 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
 
     let mut reader = response.into_reader();
     let mut reader = ProgressReader::new(&mut reader, |progress: usize| {
-        read += progress;
-        let percentage = (read as f64 / total as f64) * 100.0;
-        if let Some(progress_bar) = progress_bar {
-            unsafe { SendMessageW(progress_bar, PBM_SETPOS, percentage as _, 0) };
-        }
-        if let Some(progress_text) = progress_text {
-            let text = pluginapi::encode_wide(format!(
-                "{} / {} KiB  - {:.2}%",
-                read / 1024,
-                total / 1024,
-                percentage,
-            ));
-            unsafe { SetWindowTextW(progress_text, text.as_ptr()) };
+        let details_section = details_section.unwrap_or_else(|| unsafe {
+            let class = pluginapi::encode_wide("SysListView32");
+            let section = FindWindowExW(childwnd, 0, class.as_ptr(), std::ptr::null());
+            if section != 0 {
+                details_section = Some(section);
+            }
+            section
+        });
 
-            let text = pluginapi::encode_wide(format!("Downloading {} ...", url));
-            unsafe { SetWindowTextW(downloading_text.unwrap(), text.as_ptr()) };
+        let mut details_section_visible = false;
+
+        if details_section != 0 {
+            let style = unsafe { GetWindowLongPtrW(details_section, GWL_STYLE) };
+            details_section_visible = (style & !WS_VISIBLE as i32) != style;
+        }
+
+        if !details_section_visible {
+            read += progress;
+            let percentage = (read as f64 / total as f64) * 100.0;
+            if let Some(progress_bar) = progress_bar {
+                unsafe { SendMessageW(progress_bar, PBM_SETPOS, percentage as _, 0) };
+            }
+            if let Some(progress_text) = progress_text {
+                let text = pluginapi::encode_wide(format!(
+                    "{} / {} KiB  - {:.2}%",
+                    read / 1024,
+                    total / 1024,
+                    percentage,
+                ));
+                unsafe { SetWindowTextW(progress_text, text.as_ptr()) };
+
+                let text = pluginapi::encode_wide(format!("Downloading {} ...", url));
+                unsafe { SetWindowTextW(downloading_text.unwrap(), text.as_ptr()) };
+            }
+        } else {
+            unsafe {
+                ShowWindow(progress_bar.unwrap(), SW_HIDE);
+                ShowWindow(progress_text.unwrap(), SW_HIDE);
+                ShowWindow(downloading_text.unwrap(), SW_HIDE);
+                SetWindowPos(
+                    details_section,
+                    0,
+                    0,
+                    0,
+                    0,
+                    0,
+                    SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE,
+                );
+            }
         }
     });
 
