@@ -1,5 +1,10 @@
 # Changelog
 
+## \[0.1.1]
+
+- Add download progress bar
+  - [eba1392](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/eba1392081d22879383ba1e21c6b7bceb19a42f2) feat(download): add progress bar ([#8](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/8)) on 2023-01-24
+
 ## \[0.1.0]
 
 - Initial Release.
