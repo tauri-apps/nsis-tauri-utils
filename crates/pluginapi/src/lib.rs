@@ -79,7 +79,7 @@ pub unsafe fn pushint(int: i32) {
     pushstring(int.to_string())
 }
 
-fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
+pub fn encode_wide(string: impl AsRef<OsStr>) -> Vec<u16> {
     string.as_ref().encode_wide().chain(once(0)).collect()
 }
 
