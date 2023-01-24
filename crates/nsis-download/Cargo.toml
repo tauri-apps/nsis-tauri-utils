@@ -1,23 +1,25 @@
 [package]
 name = "nsis-download"
-version = "0.1.0"
+version = "0.2.0"
 
-[package.authors]
-workspace = true
+  [package.authors]
+  workspace = true
 
-[package.edition]
-workspace = true
+  [package.edition]
+  workspace = true
 
-[package.license]
-workspace = true
+  [package.license]
+  workspace = true
 
 [lib]
-crate-type = ["rlib", "cdylib"]
+crate-type = [ "rlib", "cdylib" ]
 
 [dependencies]
-pluginapi.workspace = true
-ureq = { version = "2", default-features = false, features = ["tls"] }
+ureq = { version = "2", default-features = false, features = [ "tls" ] }
 progress-streams = "1.1"
 
-[dependencies.windows-sys]
-workspace = true
+  [dependencies.pluginapi]
+  workspace = true
+
+  [dependencies.windows-sys]
+  workspace = true
