@@ -8,8 +8,8 @@ use windows_sys::Win32::{
         Controls::{PBM_SETPOS, PROGRESS_CLASSW, WC_STATICW},
         WindowsAndMessaging::{
             CreateWindowExW, FindWindowExW, GetWindowLongPtrW, SendMessageW, SetWindowPos,
-            SetWindowTextW, GWL_STYLE, SWP_FRAMECHANGED, SWP_NOSIZE, WM_GETFONT, WM_SETFONT,
-            WS_CHILD, WS_VISIBLE,
+            SetWindowTextW, ShowWindow, GWL_STYLE, SWP_FRAMECHANGED, SWP_NOSIZE, SW_HIDE,
+            WM_GETFONT, WM_SETFONT, WS_CHILD, WS_VISIBLE,
         },
     },
 };
@@ -151,7 +151,12 @@ fn download_file(hwnd_parent: HWND, url: &str, path: &str) -> i32 {
         unsafe { SetWindowTextW(downloading_text, text.as_ptr()) };
 
         if percentage >= 100. && !details_section_resized_back {
-            unsafe { SetWindowPos(details_section, 0, 0, 41, 450, 180, SWP_FRAMECHANGED) };
+            unsafe {
+                ShowWindow(progress_bar, SW_HIDE);
+                ShowWindow(progress_text, SW_HIDE);
+                ShowWindow(downloading_text, SW_HIDE);
+                SetWindowPos(details_section, 0, 0, 41, 450, 180, SWP_FRAMECHANGED);
+            }
             details_section_resized_back = true;
         }
     });
