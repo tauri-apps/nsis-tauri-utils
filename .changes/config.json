@@ -38,9 +38,9 @@
             "path": "./crates/nsis-tauri-utils",
             "manager": "rust",
             "dependencies": [
-                "nsis-download",
-                "nsis-process",
-                "nsis-semvercompare"
+                "nsis_download",
+                "nsis_process",
+                "nsis_semvercompare"
             ],
             "assets": [
                 {
