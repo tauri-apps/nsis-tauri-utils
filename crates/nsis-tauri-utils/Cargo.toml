@@ -15,6 +15,6 @@ version = "0.1.1"
 crate-type = [ "cdylib" ]
 
 [dependencies]
-nsis-download = { path = "../nsis-download" }
-nsis-process = { path = "../nsis-process" }
-nsis-semvercompare = { path = "../nsis-semvercompare" }
+nsis-download = { version = "*", path = "../nsis-download" }
+nsis-process = { version = "*", path = "../nsis-process" }
+nsis-semvercompare = { version = "*", path = "../nsis-semvercompare" }
