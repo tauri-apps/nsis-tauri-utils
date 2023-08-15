@@ -1,83 +1,78 @@
 {
-    "gitSiteUrl": "https://www.github.com/tauri-apps/nsis-tauri-utils/",
-    "timeout": 3600000,
-    "pkgManagers": {
-        "rust": {
-            "version": true,
-            "getPublishedVersion": "node ../../.scripts/package-latest-version.js ${ pkgFile.name } ${ pkgFile.version }",
-            "publish": [
-                {
-                    "command": "cargo build --release",
-                    "dryRunCommand": true
-                },
-                {
-                    "command": "echo 'SHA1: `'",
-                    "dryRunCommand": true,
-                    "pipe": true
-                },
-                {
-                    "command": "powershell -Command 'Get-FileHash -Algorithm SHA1 \"../../target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll\" | Select -ExpandProperty Hash'",
-                    "dryRunCommand": true,
-                    "pipe": true
-                },
-                {
-                    "command": "echo '`'",
-                    "dryRunCommand": true,
-                    "pipe": true
-                }
-            ],
-            "postpublish": [
-                "git tag ${ pkg.pkg }-v${ pkgFile.versionMajor } -f",
-                "git tag ${ pkg.pkg }-v${ pkgFile.versionMajor }.${ pkgFile.versionMinor } -f",
-                "git push --tags -f"
-            ]
+  "gitSiteUrl": "https://www.github.com/tauri-apps/nsis-tauri-utils/",
+  "timeout": 3600000,
+  "pkgManagers": {
+    "rust": {
+      "version": true,
+      "getPublishedVersion": "node ../../.scripts/package-latest-version.js ${ pkgFile.name } ${ pkgFile.version }",
+      "publish": [
+        {
+          "command": "cargo build --release",
+          "dryRunCommand": true
+        },
+        {
+          "command": "echo 'SHA1: `'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "powershell -Command 'Get-FileHash -Algorithm SHA1 \"../../target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll\" | Select -ExpandProperty Hash'",
+          "dryRunCommand": true,
+          "pipe": true
+        },
+        {
+          "command": "echo '`'",
+          "dryRunCommand": true,
+          "pipe": true
         }
-    },
-    "packages": {
-        "nsis_tauri_utils": {
-            "path": "./crates/nsis-tauri-utils",
-            "manager": "rust",
-            "dependencies": [
-                "nsis_download",
-                "nsis_process",
-                "nsis_semvercompare"
-            ],
-            "assets": [
-                {
-                    "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-                    "name": "${ pkg.pkg }.dll"
-                }
-            ]
-        },
-        "nsis_download": {
-            "path": "./crates/nsis-download",
-            "manager": "rust",
-            "assets": [
-                {
-                    "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-                    "name": "${ pkg.pkg }.dll"
-                }
-            ]
-        },
-        "nsis_process": {
-            "path": "./crates/nsis-process",
-            "manager": "rust",
-            "assets": [
-                {
-                    "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-                    "name": "${ pkg.pkg }.dll"
-                }
-            ]
-        },
-        "nsis_semvercompare": {
-            "path": "./crates/nsis-semvercompare",
-            "manager": "rust",
-            "assets": [
-                {
-                    "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-                    "name": "${ pkg.pkg }.dll"
-                }
-            ]
-        }
+      ],
+      "postpublish": [
+        "git tag ${ pkg.pkg }-v${ pkgFile.versionMajor } -f",
+        "git tag ${ pkg.pkg }-v${ pkgFile.versionMajor }.${ pkgFile.versionMinor } -f",
+        "git push --tags -f"
+      ]
     }
+  },
+  "packages": {
+    "nsis_tauri_utils": {
+      "path": "./crates/nsis-tauri-utils",
+      "manager": "rust",
+      "assets": [
+        {
+          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
+          "name": "${ pkg.pkg }.dll"
+        }
+      ]
+    },
+    "nsis_download": {
+      "path": "./crates/nsis-download",
+      "manager": "rust",
+      "assets": [
+        {
+          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
+          "name": "${ pkg.pkg }.dll"
+        }
+      ]
+    },
+    "nsis_process": {
+      "path": "./crates/nsis-process",
+      "manager": "rust",
+      "assets": [
+        {
+          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
+          "name": "${ pkg.pkg }.dll"
+        }
+      ]
+    },
+    "nsis_semvercompare": {
+      "path": "./crates/nsis-semvercompare",
+      "manager": "rust",
+      "assets": [
+        {
+          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
+          "name": "${ pkg.pkg }.dll"
+        }
+      ]
+    }
+  }
 }

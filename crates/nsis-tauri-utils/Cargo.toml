@@ -2,19 +2,19 @@
 name = "nsis-tauri-utils"
 version = "0.1.1"
 
-  [package.authors]
-  workspace = true
+[package.authors]
+workspace = true
 
-  [package.edition]
-  workspace = true
+[package.edition]
+workspace = true
 
-  [package.license]
-  workspace = true
+[package.license]
+workspace = true
 
 [lib]
-crate-type = [ "cdylib" ]
+crate-type = ["cdylib"]
 
 [dependencies]
-nsis-download = { version = "*", path = "../nsis-download" }
-nsis-process = { version = "*", path = "../nsis-process" }
-nsis-semvercompare = { version = "*", path = "../nsis-semvercompare" }
+nsis-download = { path = "../nsis-download" }
+nsis-process = { path = "../nsis-process" }
+nsis-semvercompare = { path = "../nsis-semvercompare" }
