@@ -1,8 +1,8 @@
 ---
-"nsis-tauri-utils": "patch"
-"nsis-download": "patch"
-"nsis-process": "patch"
-"nsis-semvercompare": "patch"
+"nsis_tauri_utils": "patch"
+"nsis_download": "patch"
+"nsis_process": "patch"
+"nsis_semvercompare": "patch"
 ---
 
 Statically link CRT.
