@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.2.0]
+
+- [`33ea4bc`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/33ea4bcf2a573461ebc5181ef2921d8746005049)([#17](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/17)) Statically link CRT.
+
 ## \[0.1.0]
 
 - Initial Release.

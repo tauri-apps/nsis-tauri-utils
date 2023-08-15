@@ -1,6 +1,6 @@
 [package]
 name = "nsis-semvercompare"
-version = "0.1.0"
+version = "0.2.0"
 
   [package.authors]
   workspace = true
@@ -15,8 +15,10 @@ version = "0.1.0"
 crate-type = [ "rlib", "cdylib" ]
 
 [dependencies]
-pluginapi.workspace = true
 semver = "1.0.18"
+
+  [dependencies.pluginapi]
+  workspace = true
 
   [dependencies.windows-sys]
   workspace = true
