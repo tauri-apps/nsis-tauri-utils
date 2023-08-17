@@ -13,7 +13,7 @@ use windows_sys::Win32::{
     },
 };
 
-/// Test if there is a running process with the given name. The input and process names are case-insensitive.
+/// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
 /// # Safety
 ///
@@ -36,7 +36,7 @@ pub unsafe extern "C" fn FindProcess(
     }
 }
 
-/// Kill all running process with the given name. The input and process names are case-insensitive.
+/// Kill all running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
 /// # Safety
 ///
@@ -71,6 +71,7 @@ fn kill(pid: u32) -> bool {
 }
 
 fn get_processes(name: &str) -> Vec<u32> {
+    let current_pid = std::process::id();
     let mut processes = Vec::new();
 
     unsafe {
@@ -89,7 +90,9 @@ fn get_processes(name: &str) -> Vec<u32> {
                     .to_lowercase()
                     == name.to_lowercase()
                 {
-                    processes.push(process.th32ProcessID);
+                    if current_pid != process.th32ProcessID {
+                        processes.push(process.th32ProcessID);
+                    }
                 }
             }
         }
