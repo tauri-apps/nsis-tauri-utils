@@ -84,15 +84,14 @@ fn get_processes(name: &str) -> Vec<u32> {
 
         if Process32FirstW(handle, &mut process) != 0 {
             while Process32NextW(handle, &mut process) != 0 {
-                if decode_wide(&process.szExeFile)
-                    .to_str()
-                    .unwrap_or_default()
-                    .to_lowercase()
-                    == name.to_lowercase()
+                if current_pid != process.th32ProcessID
+                    && decode_wide(&process.szExeFile)
+                        .to_str()
+                        .unwrap_or_default()
+                        .to_lowercase()
+                        == name.to_lowercase()
                 {
-                    if current_pid != process.th32ProcessID {
-                        processes.push(process.th32ProcessID);
-                    }
+                    processes.push(process.th32ProcessID);
                 }
             }
         }
