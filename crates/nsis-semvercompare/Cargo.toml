@@ -15,7 +15,7 @@ version = "0.2.0"
 crate-type = [ "rlib", "cdylib" ]
 
 [dependencies]
-semver = "1.0.18"
+semver = "1.0"
 
   [dependencies.pluginapi]
   workspace = true
