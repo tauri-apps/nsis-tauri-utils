@@ -11,7 +11,7 @@ license = "MIT or Apache-2.0"
 pluginapi = { path = "./crates/pluginapi" }
 
 [workspace.dependencies.windows-sys]
-version = "0.48.0"
+version = "0.52.0"
 features = [
     "Win32_Foundation",
     "Win32_Globalization",
