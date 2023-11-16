@@ -9,8 +9,9 @@ use std::{
 };
 
 use windows_sys::Win32::{
+    Foundation::GlobalFree,
     Globalization::{lstrcpyW, lstrcpynW},
-    System::Memory::{GlobalAlloc, GlobalFree, GPTR},
+    System::Memory::{GlobalAlloc, GPTR},
 };
 
 static mut G_STRINGSIZE: u32 = 0;
