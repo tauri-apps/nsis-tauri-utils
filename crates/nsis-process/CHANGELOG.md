@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.2.2]
+
+- [`7b6cfcc`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/7b6cfccd71c04a2ee87d6665b6822ccfe6d389b5)([#24](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/24)) Add `FindProcessCurrentUser` and `KillProcessCurrentUser`.
+
 ## \[0.2.1]
 
 - [`92f9264`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/92f92648b50fd298590570f43ed00de089609536)([#19](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/19)) Skip processes with the same pid as the current installer's process to prevent the installer from killing itself.
