@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.5.1]
+
+- [`58ac891`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/58ac8913b9a4ca34a448775ee783ce83771eec90) Fix `StrReplace` not accessible in this plugin.
+
 ## \[0.5.0]
 
 - [`fa4d4ba`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/fa4d4baf760070d258ce246a2a515d6337dffed7) Add `StrReplace` function.
