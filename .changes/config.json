@@ -63,6 +63,16 @@
           "name": "${ pkg.pkg }.dll"
         }
       ]
+    },
+    "nsis_string": {
+      "path": "./crates/nsis-string",
+      "manager": "rust",
+      "assets": [
+        {
+          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
+          "name": "${ pkg.pkg }.dll"
+        }
+      ]
     }
   }
 }
