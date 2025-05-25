@@ -93,7 +93,7 @@ fn KillProcess() -> Result<(), Error> {
 
     let processes = get_processes(&name);
 
-    if !processes.is_empty() && processes.into_iter().map(kill).all(|b| b) {
+    if !processes.is_empty() && processes.into_iter().all(kill) {
         push(ZERO)
     } else {
         push(ONE)
@@ -119,10 +119,9 @@ fn KillProcessCurrentUser() -> Result<(), Error> {
         processes
             .into_iter()
             .filter(|pid| belongs_to_user(user_sid, *pid))
-            .map(kill)
-            .all(|b| b)
+            .all(kill)
     } else {
-        processes.into_iter().map(kill).all(|b| b)
+        processes.into_iter().all(kill)
     };
 
     if success {
@@ -388,7 +387,7 @@ mod tests {
         let processes = get_processes("something_that_doesnt_exist.exe");
         // TODO: maybe find some way to spawn a dummy process we can kill here?
         // This will return true on empty iterators so it's basically no-op right now
-        assert!(processes.into_iter().map(kill).all(|b| b));
+        assert!(processes.into_iter().all(kill));
     }
 
     #[test]
