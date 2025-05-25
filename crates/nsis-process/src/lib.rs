@@ -1,11 +1,13 @@
 #![no_std]
+use nsis_plugin_api::*;
+nsis_plugin!();
 
+/* start-marker */
 extern crate alloc;
 
 use alloc::{borrow::ToOwned, vec, vec::Vec};
 use core::{ffi::c_void, mem, ops::Deref, ops::DerefMut, ptr};
 
-use nsis_plugin_api::*;
 use windows_sys::Win32::Foundation::{ERROR_ACCESS_DENIED, ERROR_INVALID_PARAMETER};
 use windows_sys::{
     w,
@@ -35,8 +37,6 @@ use windows_sys::{
         },
     },
 };
-
-nsis_plugin!();
 
 /// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
@@ -370,6 +370,8 @@ impl DerefMut for OwnedHandle {
         &mut self.0
     }
 }
+
+/* end-marker */
 
 #[cfg(test)]
 mod tests {

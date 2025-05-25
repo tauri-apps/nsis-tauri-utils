@@ -1,11 +1,10 @@
 #![no_std]
-
-use core::cmp::Ordering;
-
 use nsis_plugin_api::*;
-use semver::Version;
-
 nsis_plugin!();
+
+/* start-marker */
+use core::cmp::Ordering;
+use semver::Version;
 
 /// Compare two semantic versions.
 ///
@@ -46,6 +45,8 @@ fn compare(v1: &str, v2: &str) -> i32 {
         Ordering::Less => -1,
     }
 }
+
+/* end-marker */
 
 #[cfg(test)]
 mod tests {

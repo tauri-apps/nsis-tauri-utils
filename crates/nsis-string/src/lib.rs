@@ -1,8 +1,8 @@
 #![no_std]
-
 use nsis_plugin_api::*;
-
 nsis_plugin!();
+
+/* start-marker */
 
 /// Replaces all occurrences of a substring in a string with another substring.
 ///
@@ -22,3 +22,5 @@ fn StrReplace() -> Result<(), Error> {
 
     Ok(())
 }
+
+/* end-marker */

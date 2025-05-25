@@ -23,14 +23,8 @@ fn combine_plugins_and_write_to_out_dir() {
     ] {
         let lines = plugin
             .lines()
-            .filter(|l| {
-                // remove lines that should only be specified once
-                // either for compilation or for clippy
-                !(l.contains("#![no_std]")
-                    || l.contains("nsis_plugin!();")
-                    || l.contains("use nsis_plugin_api::*;"))
-            })
-            .take_while(|l| !l.contains("mod tests {"))
+            .skip_while(|&l| l != "/* start-marker */")
+            .take_while(|&l| l != "/* end-marker */")
             .collect::<Vec<&str>>();
 
         // skip last line which should be #[cfg(test)]
