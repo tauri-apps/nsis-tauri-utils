@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.5.0]
+
+- [`fa4d4ba`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/fa4d4baf760070d258ce246a2a515d6337dffed7) Add `StrReplace` function.
+
 ## \[0.4.2]
 
 - [`14d311b`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/14d311b13f598508cfa48fae66db3cfb5a30d3bf) ([#40](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/40) by [@Legend-Master](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Legend-Master)) Fix `RunAsUser` can't launch programs that require admin right

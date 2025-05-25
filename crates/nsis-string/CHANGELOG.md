@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.1.0]
+
+- [`c04ba07`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/c04ba071549620a0fa07a06830af4cfa906135d1) ([#43](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/43)) Initial Release
+
 ## \[0.3.0]
 
 - [`5423579`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/5423579860016c4f3074831eda03096ee4854e73)([#26](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/26)) Reduce the DLL size by using `no_std` and without static msvcrt.
