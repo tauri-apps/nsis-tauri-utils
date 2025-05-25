@@ -19,6 +19,7 @@ fn combine_plugins_and_write_to_out_dir() {
     for plugin in [
         include_str!("../nsis-semvercompare/src/lib.rs"),
         include_str!("../nsis-process/src/lib.rs"),
+        include_str!("../nsis-string/src/lib.rs"),
     ] {
         let lines = plugin
             .lines()
