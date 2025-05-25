@@ -1,5 +1,5 @@
 ---
-"nsis-string": "minor"
+"nsis_string": "minor"
 ---
 
 Initial Release
