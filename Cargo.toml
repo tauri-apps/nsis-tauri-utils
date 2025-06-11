@@ -11,7 +11,7 @@ license = "MIT or Apache-2.0"
 nsis-plugin-api = { path = "./crates/nsis-plugin-api" }
 
 [workspace.dependencies.windows-sys]
-version = "0.59.0"
+version = "0.60.0"
 features = [
     "Win32_Foundation",
     "Win32_Globalization",
