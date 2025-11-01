@@ -93,7 +93,7 @@ fn KillProcess() -> Result<(), Error> {
 
     let processes = get_processes(&name);
 
-    if !processes.is_empty() && processes.into_iter().all(kill) {
+    if processes.into_iter().all(kill) {
         push(ZERO)
     } else {
         push(ONE)
@@ -112,7 +112,7 @@ fn KillProcessCurrentUser() -> Result<(), Error> {
     let processes = get_processes(&name);
 
     if processes.is_empty() {
-        return push(ONE);
+        return push(ZERO);
     }
 
     let success = if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
