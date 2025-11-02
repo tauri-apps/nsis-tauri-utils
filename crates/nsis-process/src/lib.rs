@@ -40,9 +40,9 @@ use windows_sys::{
 
 /// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
-/// # Safety
+/// This function takes 1 string on the stack as the parameter:
 ///
-/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
+/// - $1: name
 #[nsis_fn]
 fn FindProcess() -> Result<(), Error> {
     let name = popstr()?;
@@ -56,9 +56,9 @@ fn FindProcess() -> Result<(), Error> {
 
 /// Test if there is a running process with the given name that belongs to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
-/// # Safety
+/// This function takes 1 string on the stack as the parameter:
 ///
-/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
+/// - $1: name
 #[nsis_fn]
 fn FindProcessCurrentUser() -> Result<(), Error> {
     let name = popstr()?;
@@ -84,14 +84,24 @@ fn FindProcessCurrentUser() -> Result<(), Error> {
 
 /// Kill all running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
-/// # Safety
+/// Returns:
 ///
-/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
+/// - 0: When one or more processes matching the name were found and killed successfully
+/// - 1: When one or more processes matching the name were found but not all were killed successfully
+/// - 2: When no processes matching the name were found
+///
+/// This function takes 1 string on the stack as the parameter:
+///
+/// - $1: name
 #[nsis_fn]
 fn KillProcess() -> Result<(), Error> {
     let name = popstr()?;
 
     let processes = get_processes(&name);
+
+    if processes.is_empty() {
+        return push(TWO);
+    }
 
     if processes.into_iter().all(kill) {
         push(ZERO)
@@ -102,9 +112,15 @@ fn KillProcess() -> Result<(), Error> {
 
 /// Kill all running process with the given name that belong to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
 ///
-/// # Safety
+/// Returns:
 ///
-/// This function always expects 1 string on the stack ($1: name) and will panic otherwise.
+/// - 0: When one or more processes matching the name were found and killed successfully
+/// - 1: When one or more processes matching the name were found but not all were killed successfully
+/// - 2: When no processes matching the name were found
+///
+/// This function takes 1 string on the stack as the parameter:
+///
+/// - $1: name
 #[nsis_fn]
 fn KillProcessCurrentUser() -> Result<(), Error> {
     let name = popstr()?;
@@ -112,7 +128,7 @@ fn KillProcessCurrentUser() -> Result<(), Error> {
     let processes = get_processes(&name);
 
     if processes.is_empty() {
-        return push(ZERO);
+        return push(TWO);
     }
 
     let success = if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
@@ -133,9 +149,10 @@ fn KillProcessCurrentUser() -> Result<(), Error> {
 
 /// Run program as unelevated user
 ///
-/// Needs 2 strings on the stack
-/// $1: program
-/// $2: arguments
+/// This function takes 2 strings on the stack as parameters:
+///
+/// - $1: program
+/// - $2: arguments
 #[nsis_fn]
 fn RunAsUser() -> Result<(), Error> {
     let program = popstr()?;

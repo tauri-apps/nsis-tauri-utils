@@ -53,8 +53,9 @@ pub unsafe fn exdll_init(string_size: c_int, variables: *mut wchar_t, stacktop: 
     G_STACKTOP = stacktop;
 }
 
-pub const ONE: &[u16; 2] = &[49, 0];
 pub const ZERO: &[u16; 2] = &[48, 0];
+pub const ONE: &[u16; 2] = &[49, 0];
+pub const TWO: &[u16; 2] = &[50, 0];
 pub const NEGATIVE_ONE: &[u16; 3] = &[45, 49, 0];
 
 #[derive(Debug)]
