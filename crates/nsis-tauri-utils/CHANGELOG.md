@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.5.2]
+
+- [`4054c7b`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/4054c7bd726288346099f6fa4044d8452c7baf9e) ([#49](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/49) by [@Legend-Master](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Legend-Master)) `KillProcess` and `KillProcessCurrentUser` will now be pushing 2 to the stack instead of 1 when no processes were found
+
 ## \[0.5.1]
 
 - [`58ac891`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/58ac8913b9a4ca34a448775ee783ce83771eec90) Fix `StrReplace` not accessible in this plugin.
