@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.4.3]
+
+- [`4054c7b`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/4054c7bd726288346099f6fa4044d8452c7baf9e) ([#49](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/49) by [@Legend-Master](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Legend-Master)) `KillProcess` and `KillProcessCurrentUser` will now be pushing 2 to the stack instead of 1 when no processes were found
+
 ## \[0.4.2]
 
 - [`14d311b`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/14d311b13f598508cfa48fae66db3cfb5a30d3bf) ([#40](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/40) by [@Legend-Master](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Legend-Master)) Fix `RunAsUser` can't launch programs that require admin right
