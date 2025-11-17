@@ -5,31 +5,22 @@ nsis_plugin!();
 /* start-marker */
 extern crate alloc;
 
-use alloc::{borrow::ToOwned, vec, vec::Vec};
-use core::{ffi::c_void, mem, ops::Deref, ops::DerefMut, ptr};
+use alloc::{borrow::ToOwned, vec};
+use core::{mem, ops::Deref, ops::DerefMut, ptr};
 
-use windows_sys::Win32::Foundation::{ERROR_ACCESS_DENIED, ERROR_INVALID_PARAMETER};
 use windows_sys::{
     w,
     Win32::{
         Foundation::{
             CloseHandle, GetLastError, ERROR_ELEVATION_REQUIRED, ERROR_INSUFFICIENT_BUFFER, FALSE,
-            HANDLE, TRUE,
+            HANDLE,
         },
-        Security::{EqualSid, GetTokenInformation, TokenUser, TOKEN_QUERY, TOKEN_USER},
-        System::{
-            Diagnostics::ToolHelp::{
-                CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
-                TH32CS_SNAPPROCESS,
-            },
-            Threading::{
-                CreateProcessW, GetCurrentProcessId, InitializeProcThreadAttributeList,
-                OpenProcess, OpenProcessToken, TerminateProcess, UpdateProcThreadAttribute,
-                CREATE_NEW_PROCESS_GROUP, CREATE_UNICODE_ENVIRONMENT, EXTENDED_STARTUPINFO_PRESENT,
-                LPPROC_THREAD_ATTRIBUTE_LIST, PROCESS_CREATE_PROCESS, PROCESS_INFORMATION,
-                PROCESS_QUERY_INFORMATION, PROCESS_TERMINATE, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS,
-                STARTUPINFOEXW, STARTUPINFOW,
-            },
+        System::Threading::{
+            CreateProcessW, InitializeProcThreadAttributeList, OpenProcess,
+            UpdateProcThreadAttribute, CREATE_NEW_PROCESS_GROUP, CREATE_UNICODE_ENVIRONMENT,
+            EXTENDED_STARTUPINFO_PRESENT, LPPROC_THREAD_ATTRIBUTE_LIST, PROCESS_CREATE_PROCESS,
+            PROCESS_INFORMATION, PROC_THREAD_ATTRIBUTE_PARENT_PROCESS, STARTUPINFOEXW,
+            STARTUPINFOW,
         },
         UI::{
             Shell::ShellExecuteW,
@@ -37,115 +28,6 @@ use windows_sys::{
         },
     },
 };
-
-/// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn FindProcess() -> Result<(), Error> {
-    let name = popstr()?;
-
-    if !get_processes(&name).is_empty() {
-        push(ZERO)
-    } else {
-        push(ONE)
-    }
-}
-
-/// Test if there is a running process with the given name that belongs to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn FindProcessCurrentUser() -> Result<(), Error> {
-    let name = popstr()?;
-
-    let processes = get_processes(&name);
-
-    if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
-        if processes
-            .into_iter()
-            .any(|pid| belongs_to_user(user_sid, pid))
-        {
-            push(ZERO)
-        } else {
-            push(ONE)
-        }
-    // Fall back to perMachine checks if we can't get current user id
-    } else if processes.is_empty() {
-        push(ONE)
-    } else {
-        push(ZERO)
-    }
-}
-
-/// Kill all running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// Returns:
-///
-/// - 0: When one or more processes matching the name were found and killed successfully
-/// - 1: When one or more processes matching the name were found but not all were killed successfully
-/// - 2: When no processes matching the name were found
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn KillProcess() -> Result<(), Error> {
-    let name = popstr()?;
-
-    let processes = get_processes(&name);
-
-    if processes.is_empty() {
-        return push(TWO);
-    }
-
-    if processes.into_iter().all(kill) {
-        push(ZERO)
-    } else {
-        push(ONE)
-    }
-}
-
-/// Kill all running process with the given name that belong to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// Returns:
-///
-/// - 0: When one or more processes matching the name were found and killed successfully
-/// - 1: When one or more processes matching the name were found but not all were killed successfully
-/// - 2: When no processes matching the name were found
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn KillProcessCurrentUser() -> Result<(), Error> {
-    let name = popstr()?;
-
-    let processes = get_processes(&name);
-
-    if processes.is_empty() {
-        return push(TWO);
-    }
-
-    let success = if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
-        processes
-            .into_iter()
-            .filter(|pid| belongs_to_user(user_sid, *pid))
-            .all(kill)
-    } else {
-        processes.into_iter().all(kill)
-    };
-
-    if success {
-        push(ZERO)
-    } else {
-        push(ONE)
-    }
-}
 
 /// Run program as unelevated user
 ///
@@ -162,104 +44,6 @@ fn RunAsUser() -> Result<(), Error> {
     } else {
         push(ONE)
     }
-}
-
-unsafe fn belongs_to_user(user_sid: *mut c_void, pid: u32) -> bool {
-    let p_sid = get_sid(pid);
-    // Trying to get the sid of a process of another user will give us an "Access Denied" error.
-    // TODO: Consider checking for HRESULT(0x80070005) if we want to return true for other errors to try and kill those processes later.
-    p_sid
-        .map(|p_sid| EqualSid(user_sid, p_sid) != FALSE)
-        .unwrap_or_default()
-}
-
-fn kill(pid: u32) -> bool {
-    unsafe {
-        let handle = OpenProcess(PROCESS_TERMINATE, 0, pid);
-        if handle.is_null() {
-            let error = GetLastError();
-            // ERROR_INVALID_PARAMETER will occur if the process is already terminated
-            return error == ERROR_INVALID_PARAMETER;
-        }
-
-        let handle = OwnedHandle::new(handle);
-        if TerminateProcess(*handle, 1) == FALSE {
-            let error = GetLastError();
-            // ERROR_ACCESS_DENIED will occur if the process is terminated
-            // between OpenProcess and TerminateProcess.
-            // If current process lacks permission to terminate process,
-            // `OpenProcess` would fail with ERROR_ACCESS_DENIED instead.
-            return error == ERROR_ACCESS_DENIED;
-        }
-        true
-    }
-}
-
-// Get the SID of a process. Returns None on error.
-unsafe fn get_sid(pid: u32) -> Option<*mut c_void> {
-    let handle = OwnedHandle::new(OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid));
-    if handle.is_invalid() {
-        return None;
-    }
-
-    let mut token_handle = OwnedHandle::new(ptr::null_mut());
-    if OpenProcessToken(*handle, TOKEN_QUERY, &mut *token_handle) == FALSE {
-        return None;
-    }
-
-    let mut info_length = 0;
-    GetTokenInformation(
-        *token_handle,
-        TokenUser,
-        ptr::null_mut(),
-        0,
-        &mut info_length,
-    );
-    // GetTokenInformation always returns 0 for the first call so we check if it still gave us the buffer length
-    if info_length == 0 {
-        return None;
-    }
-
-    let mut buffer = vec![0u8; info_length as usize];
-    let info = buffer.as_mut_ptr() as *mut TOKEN_USER;
-    if GetTokenInformation(
-        *token_handle,
-        TokenUser,
-        info as *mut c_void,
-        info_length,
-        &mut info_length,
-    ) == FALSE
-    {
-        None
-    } else {
-        Some((*info).User.Sid)
-    }
-}
-
-fn get_processes(name: &str) -> Vec<u32> {
-    let current_pid = unsafe { GetCurrentProcessId() };
-    let mut processes = Vec::new();
-
-    unsafe {
-        let handle = OwnedHandle::new(CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0));
-
-        let mut process = PROCESSENTRY32W {
-            dwSize: mem::size_of::<PROCESSENTRY32W>() as u32,
-            ..mem::zeroed()
-        };
-
-        if Process32FirstW(*handle, &mut process) == TRUE {
-            while Process32NextW(*handle, &mut process) == TRUE {
-                if current_pid != process.th32ProcessID
-                    && decode_utf16_lossy(&process.szExeFile).to_lowercase() == name.to_lowercase()
-                {
-                    processes.push(process.th32ProcessID);
-                }
-            }
-        }
-    }
-
-    processes
 }
 
 /// Return true if success
@@ -394,20 +178,6 @@ impl DerefMut for OwnedHandle {
 mod tests {
 
     use super::*;
-
-    #[test]
-    fn find_process() {
-        let processes = get_processes("explorer.exe");
-        assert!(!processes.is_empty());
-    }
-
-    #[test]
-    fn kill_process() {
-        let processes = get_processes("something_that_doesnt_exist.exe");
-        // TODO: maybe find some way to spawn a dummy process we can kill here?
-        // This will return true on empty iterators so it's basically no-op right now
-        assert!(processes.into_iter().all(kill));
-    }
 
     #[test]
     fn spawn_cmd() {
