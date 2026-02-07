@@ -14,7 +14,8 @@ use windows_sys::{
     Win32::{
         Foundation::{
             CloseHandle, GetLastError, ERROR_ACCESS_DENIED, ERROR_ELEVATION_REQUIRED,
-            ERROR_INVALID_PARAMETER, ERROR_NOT_ALL_ASSIGNED, FALSE, HANDLE, LUID, TRUE,
+            ERROR_INVALID_PARAMETER, ERROR_NOT_ALL_ASSIGNED, FALSE, HANDLE, INVALID_HANDLE_VALUE,
+            LUID, TRUE,
         },
         Security::{
             AdjustTokenPrivileges, DuplicateTokenEx, EqualSid, GetTokenInformation,
@@ -453,7 +454,7 @@ impl OwnedHandle {
     }
 
     fn is_invalid(&self) -> bool {
-        self.0.is_null()
+        self.0.is_null() || self.0 == INVALID_HANDLE_VALUE
     }
 }
 
@@ -480,8 +481,8 @@ impl DerefMut for OwnedHandle {
 }
 
 struct RevertPrivilegeOnDrop {
-    process: *mut c_void,
-    privilege: *const u16,
+    process: HANDLE,
+    privilege: PCWSTR,
     previous_state: bool,
 }
 
@@ -516,7 +517,7 @@ mod tests {
 
     #[test]
     fn spawn_cmd() {
-        unsafe { run_as_user("cmd", "/c timeout 3") };
+        assert!(unsafe { run_as_user(r"C:\Windows\System32\cmd.exe", "/c timeout 3") });
     }
 
     #[test]
@@ -524,21 +525,20 @@ mod tests {
     fn spawn_with_spaces() {
         extern crate std;
         use alloc::format;
-        use alloc::string::ToString;
 
         let current = std::env::current_dir().unwrap();
 
         let dir = current.join("dir space");
         std::fs::create_dir_all(&dir).unwrap();
 
-        let systemroot = std::env::var("SYSTEMROOT").unwrap_or_else(|_| "C:\\Windows".to_owned());
+        let systemroot = std::env::var("SYSTEMROOT").unwrap_or_else(|_| r"C:\Windows".to_owned());
 
-        let cmd = format!("{systemroot}\\System32\\cmd.exe");
+        let cmd = format!(r"{systemroot}\System32\cmd.exe");
         let cmd_out = dir.join("cmdout.exe");
 
         std::fs::copy(cmd, &cmd_out).unwrap();
 
-        assert!(unsafe { run_as_user(cmd_out.display().to_string().as_str(), "/c timeout 3") });
+        assert!(unsafe { run_as_user(cmd_out.to_str().unwrap(), "/c timeout 3") });
 
         std::thread::sleep(std::time::Duration::from_secs(5));
         std::fs::remove_file(cmd_out).unwrap();
