@@ -1,5 +1,9 @@
 # Changelog
 
+## \[0.5.3]
+
+- [`79ad200`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/79ad200642c2c96702e105d82f77ed8f10f4dd1d) ([#53](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/53) by [@Jerry457](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Jerry457)) Use an alternative method `CreateProcessWithTokenW` to run programs as user, this fixed a problem that the program launched with the previous method can't query its own handle
+
 ## \[0.5.2]
 
 - [`4054c7b`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/4054c7bd726288346099f6fa4044d8452c7baf9e) ([#49](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/49) by [@Legend-Master](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Legend-Master)) `KillProcess` and `KillProcessCurrentUser` will now be pushing 2 to the stack instead of 1 when no processes were found
