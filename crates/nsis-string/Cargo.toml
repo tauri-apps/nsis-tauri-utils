@@ -8,9 +8,6 @@ license = { workspace = true }
 [lib]
 crate-type = ["cdylib"]
 
-[features]
-test = []
-
 [dependencies]
 nsis-plugin-api = { workspace = true }
 windows-sys = { workspace = true }

@@ -520,7 +520,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "test")]
     fn spawn_with_spaces() {
         extern crate std;
         use alloc::format;
