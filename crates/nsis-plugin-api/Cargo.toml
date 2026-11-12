@@ -4,6 +4,9 @@ version = "0.0.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 
+[features]
+ansi = []
+
 [dependencies]
 windows-sys = { workspace = true }
 nsis-fn = { path = "../nsis-fn" }

@@ -71,7 +71,7 @@ fn FindProcessCurrentUser() -> Result<(), Error> {
     if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
         if processes
             .into_iter()
-            .any(|pid| belongs_to_user(user_sid, pid))
+            .any(|pid| belongs_to_user(&user_sid, pid))
         {
             push(ZERO)
         } else {
@@ -137,7 +137,7 @@ fn KillProcessCurrentUser() -> Result<(), Error> {
     let success = if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
         processes
             .into_iter()
-            .filter(|pid| belongs_to_user(user_sid, *pid))
+            .filter(|pid| belongs_to_user(&user_sid, *pid))
             .all(kill)
     } else {
         processes.into_iter().all(kill)
@@ -167,12 +167,12 @@ fn RunAsUser() -> Result<(), Error> {
     }
 }
 
-unsafe fn belongs_to_user(user_sid: *mut c_void, pid: u32) -> bool {
+unsafe fn belongs_to_user(user_sid: &OwnedSid, pid: u32) -> bool {
     let p_sid = get_sid(pid);
     // Trying to get the sid of a process of another user will give us an "Access Denied" error.
     // TODO: Consider checking for HRESULT(0x80070005) if we want to return true for other errors to try and kill those processes later.
     p_sid
-        .map(|p_sid| EqualSid(user_sid, p_sid) != FALSE)
+        .map(|p_sid| EqualSid(user_sid.sid, p_sid.sid) != FALSE)
         .unwrap_or_default()
 }
 
@@ -198,8 +198,14 @@ fn kill(pid: u32) -> bool {
     }
 }
 
-// Get the SID of a process. Returns None on error.
-unsafe fn get_sid(pid: u32) -> Option<*mut c_void> {
+struct OwnedSid {
+    // TOKEN_USER's SID points into this allocation, which must outlive comparisons.
+    _token_info: Vec<u8>,
+    sid: *mut c_void,
+}
+
+// Get the SID of a process and keep its backing buffer alive. Returns None on error.
+unsafe fn get_sid(pid: u32) -> Option<OwnedSid> {
     let handle = OwnedHandle::new(OpenProcess(PROCESS_QUERY_INFORMATION, 0, pid));
     if handle.is_invalid() {
         return None;
@@ -235,7 +241,10 @@ unsafe fn get_sid(pid: u32) -> Option<*mut c_void> {
     {
         None
     } else {
-        Some((*info).User.Sid)
+        Some(OwnedSid {
+            sid: (*info).User.Sid,
+            _token_info: buffer,
+        })
     }
 }
 
@@ -539,7 +548,18 @@ mod tests {
 
         assert!(unsafe { run_as_user(cmd_out.display().to_string().as_str(), "/c timeout 3") });
 
-        std::thread::sleep(std::time::Duration::from_secs(5));
-        std::fs::remove_file(cmd_out).unwrap();
+        let started = std::time::Instant::now();
+        loop {
+            match std::fs::remove_file(&cmd_out) {
+                Ok(()) => break,
+                Err(error)
+                    if error.kind() == std::io::ErrorKind::PermissionDenied
+                        && started.elapsed() < std::time::Duration::from_secs(30) =>
+                {
+                    std::thread::sleep(std::time::Duration::from_millis(100));
+                }
+                Err(error) => panic!("failed to remove {}: {error}", cmd_out.display()),
+            }
+        }
     }
 }
