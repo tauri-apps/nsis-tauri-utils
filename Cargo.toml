@@ -1,5 +1,5 @@
 [workspace]
-members = ["crates/*"]
+members = ["crates/*", "tests"]
 resolver = "2"
 
 [workspace.package]
@@ -24,9 +24,14 @@ features = [
     "Win32_UI_Shell",
 ]
 
+[profile.dev]
+panic = "abort"   # Strip expensive panic clean-up logic
+opt-level = "s"   # Optimize for binary size
+lto = true        # Enables link time optimizations
+
 [profile.release]
 panic = "abort"   # Strip expensive panic clean-up logic
-codegen-units = 1 # Compile crates one after another so the compiler can optimize better
-lto = true        # Enables link time optimizations
 opt-level = "s"   # Optimize for binary size
+lto = true        # Enables link time optimizations
+codegen-units = 1 # Compile crates one after another so the compiler can optimize better
 strip = true      # Remove debug symbols

@@ -19,9 +19,45 @@ concurrency:
 
 jobs:
   test:
+    name: test (${{ matrix.nsis-target }})
     runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - target: i686-pc-windows-msvc
+            nsis-target: x86-unicode
+            nsis-distro: official
+            nsis-arch: x86
+            cargo-args: ''
+          - target: i686-pc-windows-msvc
+            nsis-target: x86-ansi
+            nsis-distro: official
+            nsis-arch: x86
+            cargo-args: --features ansi
+          - target: x86_64-pc-windows-msvc
+            nsis-target: amd64-unicode
+            nsis-distro: negrutiu
+            nsis-arch: amd64
+            cargo-args: ''
 
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - run: cargo test --features test
+        with:
+          targets: ${{ matrix.target }}
+
+      - run: cargo test --target ${{ matrix.target }} ${{ matrix.cargo-args }}
+
+      - name: Install ${{ matrix.nsis-distro }} NSIS
+        id: nsis
+        uses: negrutiu/nsis-install@f3339c88dba6fd08910d5275a943f8f746d94876 # v2
+        with:
+          distro: ${{ matrix.nsis-distro }}
+          arch: ${{ matrix.nsis-arch }}
+          install-dir: ${{ runner.temp }}\nsis
+          register-path: true
+
+      - name: Run plugins inside a native installer
+        env:
+          NSISDIR: ${{ steps.nsis.outputs.instdir }}
+        run: cargo test -p nsis-integration-tests --target ${{ matrix.target }} ${{ matrix.cargo-args }} -- --ignored --nocapture

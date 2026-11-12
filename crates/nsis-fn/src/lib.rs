@@ -38,8 +38,9 @@ pub fn nsis_fn(_attr: TokenStream, tokens: TokenStream) -> TokenStream {
         pub unsafe extern "C" fn #ident(
             hwnd_parent: ::windows_sys::Win32::Foundation::HWND,
             string_size: core::ffi::c_int,
-            variables: *mut ::nsis_plugin_api::wchar_t,
+            variables: *mut ::nsis_plugin_api::NsisChar,
             stacktop: *mut *mut ::nsis_plugin_api::stack_t,
+            _extra: *mut core::ffi::c_void,
         ) {
             ::nsis_plugin_api::exdll_init(string_size, variables, stacktop);
             if let Err(e) = #new_ident() {

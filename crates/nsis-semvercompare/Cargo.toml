@@ -9,7 +9,7 @@ license = { workspace = true }
 crate-type = [ "cdylib" ]
 
 [features]
-test = [ ]
+ansi = ["nsis-plugin-api/ansi"]
 
 [dependencies]
 semver = { version = "1.0", default-features = false }

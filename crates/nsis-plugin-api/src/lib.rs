@@ -4,6 +4,9 @@
 
 extern crate alloc;
 
+#[cfg(all(feature = "ansi", not(target_arch = "x86")))]
+compile_error!("ANSI plugins support only the x86-ansi NSIS target");
+
 use core::{
     ffi::{c_int, c_void},
     fmt::Display,
@@ -20,7 +23,7 @@ use alloc::{
 
 use windows_sys::Win32::{
     Foundation::GlobalFree,
-    Globalization::{lstrcpyW, lstrcpynW},
+    Globalization::lstrcpynW,
     System::Memory::{
         GetProcessHeap, GlobalAlloc, HeapAlloc, HeapFree, HeapReAlloc, GPTR, HEAP_ZERO_MEMORY,
     },
@@ -28,17 +31,28 @@ use windows_sys::Win32::{
 
 pub use nsis_fn::nsis_fn;
 
-pub type wchar_t = i32;
+#[cfg(feature = "ansi")]
+use windows_sys::Win32::Globalization::{
+    lstrcpynA, MultiByteToWideChar, WideCharToMultiByte, CP_ACP,
+};
+
+// Windows WCHAR is a UTF-16 code unit on both x86 and x64.
+pub type wchar_t = u16;
+
+#[cfg(feature = "ansi")]
+pub type NsisChar = u8;
+#[cfg(not(feature = "ansi"))]
+pub type NsisChar = u16;
 
 #[repr(C)]
 #[derive(Debug)]
 pub struct stack_t {
     pub next: *mut stack_t,
-    pub text: [wchar_t; 1],
+    pub text: [NsisChar; 1],
 }
 
 pub static mut G_STRINGSIZE: c_int = 0;
-pub static mut G_VARIABLES: *mut wchar_t = core::ptr::null_mut();
+pub static mut G_VARIABLES: *mut NsisChar = core::ptr::null_mut();
 pub static mut G_STACKTOP: *mut *mut stack_t = core::ptr::null_mut();
 
 /// Initis the global variables used by NSIS functions: [`push`], [`pushstr`], [`pushint`], [`pop`], [`popstr`] and [`popint`]
@@ -47,7 +61,11 @@ pub static mut G_STACKTOP: *mut *mut stack_t = core::ptr::null_mut();
 ///
 /// This function mutates static variables and should only be called in a function
 #[inline(always)]
-pub unsafe fn exdll_init(string_size: c_int, variables: *mut wchar_t, stacktop: *mut *mut stack_t) {
+pub unsafe fn exdll_init(
+    string_size: c_int,
+    variables: *mut NsisChar,
+    stacktop: *mut *mut stack_t,
+) {
     G_STRINGSIZE = string_size;
     G_VARIABLES = variables;
     G_STACKTOP = stacktop;
@@ -62,6 +80,7 @@ pub const NEGATIVE_ONE: &[u16; 3] = &[45, 49, 0];
 pub enum Error {
     StackIsNull,
     ParseIntError,
+    StringConversionError,
 }
 
 impl Error {
@@ -69,6 +88,7 @@ impl Error {
         match self {
             Error::StackIsNull => "Stack is null",
             Error::ParseIntError => "Failed to parse integer",
+            Error::StringConversionError => "Failed to convert string",
         }
     }
     pub fn push_err(&self) {
@@ -76,19 +96,74 @@ impl Error {
     }
 }
 
-/// Pushes some bytes onto the NSIS stack.
+/// Pushes a null-terminated UTF-16 string onto the NSIS stack, converting to ANSI if needed.
 ///
 /// # Safety
 ///
 /// This function reads static variables and should only be called after [`exdll_init`] is called.
 pub unsafe fn push(bytes: &[u16]) -> Result<(), Error> {
+    #[cfg(feature = "ansi")]
+    {
+        push_a(bytes)
+    }
+    #[cfg(not(feature = "ansi"))]
+    {
+        push_w(bytes)
+    }
+}
+
+#[cfg(feature = "ansi")]
+unsafe fn push_a(bytes: &[u16]) -> Result<(), Error> {
     if G_STACKTOP.is_null() {
         return Err(Error::StackIsNull);
     }
 
-    let n = size_of::<stack_t>() + G_STRINGSIZE as usize * 2;
+    let size = WideCharToMultiByte(
+        CP_ACP,
+        0,
+        bytes.as_ptr(),
+        -1,
+        core::ptr::null_mut(),
+        0,
+        core::ptr::null(),
+        core::ptr::null_mut(),
+    );
+    if size == 0 {
+        return Err(Error::StringConversionError);
+    }
+    let mut encoded = vec![0u8; size as usize];
+    if WideCharToMultiByte(
+        CP_ACP,
+        0,
+        bytes.as_ptr(),
+        -1,
+        encoded.as_mut_ptr(),
+        size,
+        core::ptr::null(),
+        core::ptr::null_mut(),
+    ) == 0
+    {
+        return Err(Error::StringConversionError);
+    }
+
+    let n = size_of::<stack_t>() + G_STRINGSIZE as usize * size_of::<NsisChar>();
     let th = GlobalAlloc(GPTR, n) as *mut stack_t;
-    lstrcpyW((*th).text.as_ptr() as _, bytes.as_ptr());
+    lstrcpynA((*th).text.as_mut_ptr(), encoded.as_ptr(), G_STRINGSIZE);
+    (*th).next = *G_STACKTOP;
+    *G_STACKTOP = th;
+
+    Ok(())
+}
+
+#[cfg(not(feature = "ansi"))]
+unsafe fn push_w(bytes: &[u16]) -> Result<(), Error> {
+    if G_STACKTOP.is_null() {
+        return Err(Error::StackIsNull);
+    }
+
+    let n = size_of::<stack_t>() + G_STRINGSIZE as usize * size_of::<NsisChar>();
+    let th = GlobalAlloc(GPTR, n) as *mut stack_t;
+    lstrcpynW((*th).text.as_mut_ptr(), bytes.as_ptr(), G_STRINGSIZE);
     (*th).next = *G_STACKTOP;
     *G_STACKTOP = th;
 
@@ -115,12 +190,24 @@ pub unsafe fn pushint(int: i32) -> Result<(), Error> {
     pushstr(&str)
 }
 
-/// Pops bytes from NSIS stack.
+/// Pops a string from the NSIS stack as UTF-16, converting from ANSI if needed.
 ///
 /// # Safety
 ///
 /// This function reads static variables and should only be called after [`exdll_init`] is called.
 pub unsafe fn pop() -> Result<Vec<u16>, Error> {
+    #[cfg(feature = "ansi")]
+    {
+        pop_a()
+    }
+    #[cfg(not(feature = "ansi"))]
+    {
+        pop_w()
+    }
+}
+
+#[cfg(feature = "ansi")]
+unsafe fn pop_a() -> Result<Vec<u16>, Error> {
     if G_STACKTOP.is_null() || (*G_STACKTOP).is_null() {
         return Err(Error::StackIsNull);
     }
@@ -128,7 +215,33 @@ pub unsafe fn pop() -> Result<Vec<u16>, Error> {
     let mut out = vec![0_u16; G_STRINGSIZE as _];
 
     let th: *mut stack_t = *G_STACKTOP;
-    lstrcpyW(out.as_mut_ptr(), (*th).text.as_ptr() as _);
+    let converted = MultiByteToWideChar(
+        CP_ACP,
+        0,
+        (*th).text.as_ptr(),
+        -1,
+        out.as_mut_ptr(),
+        G_STRINGSIZE,
+    );
+    *G_STACKTOP = (*th).next;
+    GlobalFree(th as _);
+
+    if converted == 0 {
+        return Err(Error::StringConversionError);
+    }
+
+    Ok(out)
+}
+
+#[cfg(not(feature = "ansi"))]
+unsafe fn pop_w() -> Result<Vec<u16>, Error> {
+    if G_STACKTOP.is_null() || (*G_STACKTOP).is_null() {
+        return Err(Error::StackIsNull);
+    }
+
+    let mut out = vec![0_u16; G_STRINGSIZE as _];
+    let th: *mut stack_t = *G_STACKTOP;
+    lstrcpynW(out.as_mut_ptr(), (*th).text.as_ptr(), G_STRINGSIZE);
     *G_STACKTOP = (*th).next;
     GlobalFree(th as _);
 
@@ -175,26 +288,62 @@ static WIN32_ALLOCATOR: Heapalloc = Heapalloc;
 
 pub struct Heapalloc;
 
+// Windows heaps guarantee 8-byte alignment on 32-bit and 16-byte alignment on 64-bit.
+const HEAP_ALIGNMENT: usize = 2 * size_of::<usize>();
+
+impl Heapalloc {
+    unsafe fn alloc_with_flags(&self, layout: Layout, flags: u32) -> *mut u8 {
+        if layout.align() <= HEAP_ALIGNMENT {
+            return HeapAlloc(GetProcessHeap(), flags, layout.size()).cast();
+        }
+
+        let Some(size) = layout.size().checked_add(layout.align()) else {
+            return core::ptr::null_mut();
+        };
+        let allocation = HeapAlloc(GetProcessHeap(), flags, size).cast::<u8>();
+        if allocation.is_null() {
+            return allocation;
+        }
+
+        // Leave room before the aligned pointer to save the original heap allocation.
+        let offset = layout.align() - (allocation as usize % layout.align());
+        let aligned = allocation.add(offset);
+        aligned.cast::<*mut u8>().sub(1).write(allocation);
+        aligned
+    }
+}
+
 unsafe impl GlobalAlloc for Heapalloc {
     unsafe fn alloc(&self, layout: Layout) -> *mut u8 {
-        HeapAlloc(GetProcessHeap(), 0, layout.size()) as *mut u8
+        self.alloc_with_flags(layout, 0)
     }
 
     unsafe fn alloc_zeroed(&self, layout: Layout) -> *mut u8 {
-        HeapAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, layout.size()) as *mut u8
+        self.alloc_with_flags(layout, HEAP_ZERO_MEMORY)
     }
 
-    unsafe fn dealloc(&self, ptr: *mut u8, _layout: Layout) {
-        HeapFree(GetProcessHeap(), 0, ptr as *mut c_void);
+    unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        let allocation = if layout.align() > HEAP_ALIGNMENT {
+            ptr.cast::<*mut u8>().sub(1).read()
+        } else {
+            ptr
+        };
+        HeapFree(GetProcessHeap(), 0, allocation.cast());
     }
 
-    unsafe fn realloc(&self, ptr: *mut u8, _layout: Layout, new_size: usize) -> *mut u8 {
-        HeapReAlloc(
-            GetProcessHeap(),
-            HEAP_ZERO_MEMORY,
-            ptr as *mut c_void,
-            new_size,
-        ) as *mut u8
+    unsafe fn realloc(&self, ptr: *mut u8, layout: Layout, new_size: usize) -> *mut u8 {
+        if layout.align() <= HEAP_ALIGNMENT {
+            return HeapReAlloc(GetProcessHeap(), HEAP_ZERO_MEMORY, ptr.cast(), new_size).cast();
+        }
+
+        // Moving a padded heap block can change its alignment offset, so allocate anew.
+        let new_layout = Layout::from_size_align_unchecked(new_size, layout.align());
+        let new_ptr = self.alloc_zeroed(new_layout);
+        if !new_ptr.is_null() {
+            core::ptr::copy_nonoverlapping(ptr, new_ptr, core::cmp::min(layout.size(), new_size));
+            self.dealloc(ptr, layout);
+        }
+        new_ptr
     }
 }
 
@@ -208,8 +357,8 @@ macro_rules! nsis_plugin {
             dll_module: ::windows_sys::Win32::Foundation::HINSTANCE,
             call_reason: u32,
             _: *mut (),
-        ) -> bool {
-            true
+        ) -> ::windows_sys::core::BOOL {
+            ::windows_sys::Win32::Foundation::TRUE
         }
 
         #[cfg(not(test))]
