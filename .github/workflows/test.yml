@@ -55,7 +55,7 @@ jobs:
           distro: ${{ matrix.nsis-distro }}
           arch: ${{ matrix.nsis-arch }}
           install-dir: ${{ runner.temp }}\nsis
-          register-path: false
+          register-path: true
 
       - name: Run plugins inside a native installer
         env:
