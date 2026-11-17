@@ -7,21 +7,19 @@
       "getPublishedVersion": "node ../../.scripts/package-latest-version.js ${ pkgFile.name } ${ pkgFile.version }",
       "publish": [
         {
-          "command": "cargo build --release",
+          "command": "cargo build --release --target i686-pc-windows-msvc",
           "dryRunCommand": true
         },
         {
-          "command": "echo 'SHA1: `'",
-          "dryRunCommand": true,
-          "pipe": true
+          "command": "cargo build --release --target x86_64-pc-windows-msvc",
+          "dryRunCommand": true
         },
         {
-          "command": "powershell -Command 'Get-FileHash -Algorithm SHA1 \"../../target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll\" | Select -ExpandProperty Hash'",
-          "dryRunCommand": true,
-          "pipe": true
+          "command": "cargo build --release --target i686-pc-windows-msvc --features ansi --target-dir ../../target/x86-ansi",
+          "dryRunCommand": true
         },
         {
-          "command": "echo '`'",
+          "command": "pwsh -NoProfile -File ../../.scripts/package-plugin.ps1 ${ pkg.pkg }",
           "dryRunCommand": true,
           "pipe": true
         }
@@ -39,8 +37,8 @@
       "manager": "rust",
       "assets": [
         {
-          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-          "name": "${ pkg.pkg }.dll"
+          "path": "target/packages/${ pkg.pkg }.zip",
+          "name": "${ pkg.pkg }.zip"
         }
       ]
     },
@@ -49,8 +47,8 @@
       "manager": "rust",
       "assets": [
         {
-          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-          "name": "${ pkg.pkg }.dll"
+          "path": "target/packages/${ pkg.pkg }.zip",
+          "name": "${ pkg.pkg }.zip"
         }
       ]
     },
@@ -59,8 +57,8 @@
       "manager": "rust",
       "assets": [
         {
-          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-          "name": "${ pkg.pkg }.dll"
+          "path": "target/packages/${ pkg.pkg }.zip",
+          "name": "${ pkg.pkg }.zip"
         }
       ]
     },
@@ -69,8 +67,8 @@
       "manager": "rust",
       "assets": [
         {
-          "path": "target/i686-pc-windows-msvc/release/${ pkg.pkg }.dll",
-          "name": "${ pkg.pkg }.dll"
+          "path": "target/packages/${ pkg.pkg }.zip",
+          "name": "${ pkg.pkg }.zip"
         }
       ]
     }

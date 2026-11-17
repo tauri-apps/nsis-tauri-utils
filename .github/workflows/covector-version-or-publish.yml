@@ -25,6 +25,10 @@ jobs:
 
       - uses: actions/setup-node@v4
 
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: i686-pc-windows-msvc,x86_64-pc-windows-msvc
+
       - name: git config
         run: |
           git config --global user.name "${{ github.event.pusher.name }}"
