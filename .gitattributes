@@ -1,0 +1,2 @@
+# Covector requires LF line endings for change file frontmatter.
+.changes/*.md text eol=lf
