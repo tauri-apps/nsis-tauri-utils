@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.0]
+
+- [`0cb9ad1`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/0cb9ad112172a8bc6cc77901f3b3b4fc850cc2ee) ([#60](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/60) by [@amrbashir](https://www.github.com/tauri-apps/nsis-tauri-utils/../../amrbashir)) Add native x64 and x86 ANSI plugins.
+
+
+
 ## \[0.3.0]
 
 - [`5423579`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/5423579860016c4f3074831eda03096ee4854e73)([#26](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/26)) Reduce the DLL size by using `no_std` and without static msvcrt.

@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.5.0]
+
+- [`0cb9ad1`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/0cb9ad112172a8bc6cc77901f3b3b4fc850cc2ee) ([#60](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/60) by [@amrbashir](https://www.github.com/tauri-apps/nsis-tauri-utils/../../amrbashir)) Add native x64 and x86 ANSI plugins.
+
+
+
 ## \[0.4.4]
 
 - [`79ad200`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/79ad200642c2c96702e105d82f77ed8f10f4dd1d) ([#53](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/53) by [@Jerry457](https://www.github.com/tauri-apps/nsis-tauri-utils/../../Jerry457)) Use an alternative method `CreateProcessWithTokenW` to run programs as user, this fixed a problem that the program launched with the previous method can't query its own handle
