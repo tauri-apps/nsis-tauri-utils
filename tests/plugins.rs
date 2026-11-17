@@ -65,15 +65,12 @@ fn nsis_command() -> Command {
     command
 }
 
-fn build_directory(target: NsisTarget) -> io::Result<PathBuf> {
-    // Cargo places tests in <target-dir>/[<rust-target>/]<profile>/deps.
-    let executable = env::current_exe()?;
-    Ok(executable
-        .ancestors()
-        .nth(2)
-        .unwrap()
+fn build_directory(target: NsisTarget) -> PathBuf {
+    // Keep nested Cargo builds out of the test executable's directory, whose
+    // layout can change and make linker paths exceed Windows path limits.
+    Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("nsis-tests")
-        .join(target.name))
+        .join(target.name)
 }
 
 fn build_plugins(target: NsisTarget, build_directory: &Path) -> io::Result<PathBuf> {
@@ -142,7 +139,7 @@ fn native_installer() -> io::Result<()> {
         TARGETS[0]
     };
 
-    let build_directory = build_directory(target)?;
+    let build_directory = build_directory(target);
 
     let release_directory = build_plugins(target, &build_directory)?;
     run_target(target, &release_directory)
