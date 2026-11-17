@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0]
+
+- [`0cb9ad1`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/0cb9ad112172a8bc6cc77901f3b3b4fc850cc2ee) ([#60](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/60) by [@amrbashir](https://www.github.com/tauri-apps/nsis-tauri-utils/../../amrbashir)) Add native x64 and x86 ANSI plugins.
+
+
+
 ## \[0.1.0]
 
 - [`c04ba07`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/c04ba071549620a0fa07a06830af4cfa906135d1) ([#43](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/43)) Initial Release
