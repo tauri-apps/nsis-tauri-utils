@@ -76,6 +76,9 @@ $stagingDirectory = Join-Path $packageDirectory $stagingName
 $archivePath = Join-Path $packageDirectory "$Plugin.zip"
 
 try {
+    # Separate the checksums from the changelog in Covector's release notes.
+    Write-Output "`n---`n"
+
     New-PluginStaging -PluginName $Plugin -StagingDirectory $stagingDirectory
 
     Compress-Archive -LiteralPath (Get-ChildItem -LiteralPath $stagingDirectory).FullName `
