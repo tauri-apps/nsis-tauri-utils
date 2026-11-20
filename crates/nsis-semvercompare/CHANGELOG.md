@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.4.1]
+
+- [`458e486`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/458e4865979699fb628fe3345dfdc860bdb41691) Place release DLLs under Plugins/<target>/ in each ZIP.
+
+
+
 ## [0.4.0]
 
 - [`0cb9ad1`](https://www.github.com/tauri-apps/nsis-tauri-utils/commit/0cb9ad112172a8bc6cc77901f3b3b4fc850cc2ee) ([#60](https://www.github.com/tauri-apps/nsis-tauri-utils/pull/60) by [@amrbashir](https://www.github.com/tauri-apps/nsis-tauri-utils/../../amrbashir)) Add native x64 and x86 ANSI plugins.
