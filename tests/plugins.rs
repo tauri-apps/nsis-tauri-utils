@@ -85,7 +85,7 @@ fn build_plugins(target: NsisTarget, build_directory: &Path) -> io::Result<PathB
         cargo.args(["--package", package]);
     }
     if cfg!(feature = "ansi") {
-        cargo.args(["--features", "ansi"]);
+        cargo.args(["--no-default-features", "--features", "ansi"]);
     }
 
     println!("Building release DLLs for {}", target.name);
@@ -191,7 +191,7 @@ fn run_target(target: NsisTarget, release_directory: &Path) -> io::Result<()> {
 
     // Compile the installer; NSIS reports an error if the target is unsupported.
     let installer = run_directory.join("plugin-tests.exe");
-    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("plugins.nsi");
+    let script = Path::new(env!("CARGO_MANIFEST_DIR")).join("smoke.nsi");
     let mut compiler = ChildGuard(
         nsis_command()
             .arg("/V2")

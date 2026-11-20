@@ -15,7 +15,7 @@
           "dryRunCommand": true
         },
         {
-          "command": "cargo build --release --target i686-pc-windows-msvc --features ansi --target-dir ../../target/x86-ansi",
+          "command": "cargo build --release --target i686-pc-windows-msvc --no-default-features --features ansi --target-dir ../../target/x86-ansi",
           "dryRunCommand": true
         },
         {

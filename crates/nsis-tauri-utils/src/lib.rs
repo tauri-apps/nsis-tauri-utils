@@ -1,7 +1,9 @@
-#![no_std]
+#![cfg_attr(target_os = "windows", no_std)]
 
-use nsis_plugin_api::*;
+use nsis_plugin::{nsis_fn, Nsis, Result};
 
-nsis_plugin!();
+// The Windows test harness supplies std's panic handler and allocator.
+#[cfg(not(test))]
+nsis_plugin::nsis_plugin!();
 
 include!(concat!(env!("OUT_DIR"), "/combined_libs.rs"));

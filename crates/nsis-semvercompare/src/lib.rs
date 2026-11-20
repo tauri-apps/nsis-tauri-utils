@@ -1,31 +1,34 @@
-#![no_std]
-use nsis_plugin_api::*;
-nsis_plugin!();
+#![cfg_attr(target_os = "windows", no_std)]
+use nsis_plugin::{nsis_fn, Nsis, Result};
+// The Windows test harness supplies std's panic handler and allocator.
+#[cfg(not(test))]
+nsis_plugin::nsis_plugin!();
 
 /* start-marker */
 use core::cmp::Ordering;
 use semver::Version;
 
-/// Compare two semantic versions.
-///
-/// Returns `0` if equal, `1` if `$v1` is newer and `-1` if `$v2` is newer.
-///
-/// # Safety
-///
-/// This function always expects 2 strings on the stack ($v1, $v2) and will panic otherwise.
-#[nsis_fn]
-fn SemverCompare() -> Result<(), Error> {
-    let v1 = popstr()?;
-    let v2 = popstr()?;
+nsis_fn! {
+    /// Compare two semantic versions.
+    ///
+    /// Returns `0` if equal, `1` if `$v1` is newer and `-1` if `$v2` is newer.
+    ///
+    /// # Safety
+    ///
+    /// The stack must contain 2 strings ($v1, $v2).
+    fn SemverCompare(nsis: &mut Nsis) -> Result<()> {
+        let v1 = nsis.stack.pop()?;
+        let v2 = nsis.stack.pop()?;
 
-    match compare(&v1, &v2) {
-        -1 => push(NEGATIVE_ONE)?,
-        0 => push(ZERO)?,
-        1 => push(ONE)?,
-        _ => unreachable!(),
+        match compare(&v1, &v2) {
+            -1 => nsis.stack.push_int(-1)?,
+            0 => nsis.stack.push_int(0)?,
+            1 => nsis.stack.push_int(1)?,
+            _ => unreachable!(),
+        }
+
+        Ok(())
     }
-
-    Ok(())
 }
 
 fn compare(v1: &str, v2: &str) -> i32 {
@@ -50,7 +53,12 @@ fn compare(v1: &str, v2: &str) -> i32 {
 
 #[cfg(test)]
 mod tests {
+    extern crate std;
+
+    use std::string::ToString;
+
     use super::*;
+    use nsis_plugin::testing::TestInstaller;
 
     #[test]
     fn it_works() {
@@ -69,7 +77,13 @@ mod tests {
             ("1.2.1-fffasd.1", "1.2.1-dasdqwe.1", 1),
             ("1.2.1-gasfdlkj.1", "1.2.1-calskjd.1", 1),
         ] {
-            assert_eq!(compare(v1, v2), ret);
+            let mut installer = TestInstaller::stock();
+            installer.push(v2);
+            installer.push(v1);
+            installer.call(SemverCompare);
+
+            assert_eq!(installer.pop().as_deref(), Some(ret.to_string().as_str()));
+            assert!(!installer.error());
         }
     }
 }

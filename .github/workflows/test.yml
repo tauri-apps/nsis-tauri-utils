@@ -33,7 +33,7 @@ jobs:
             nsis-target: x86-ansi
             nsis-distro: official
             nsis-arch: x86
-            cargo-args: --features ansi
+            cargo-args: --no-default-features --features ansi
           - target: x86_64-pc-windows-msvc
             nsis-target: amd64-unicode
             nsis-distro: negrutiu
