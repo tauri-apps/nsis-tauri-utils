@@ -552,9 +552,16 @@ mod tests {
 
     #[test]
     fn spawn_cmd() {
+        extern crate std;
+        use alloc::string::ToString;
+
+        let systemroot = std::env::var_os("SYSTEMROOT").expect("SYSTEMROOT must be set");
+        let cmd = std::path::Path::new(&systemroot).join("System32/cmd.exe");
+
         let mut installer = TestInstaller::stock();
         installer.push("/c timeout 3");
-        installer.push("cmd");
+        // The elevated launch API requires an executable path with its extension.
+        installer.push(&cmd.display().to_string());
         installer.call(RunAsUser);
 
         assert_eq!(installer.pop().as_deref(), Some("0"));
