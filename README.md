@@ -11,9 +11,11 @@ A collection of NSIS plugins written in rust.
 
 ## Release packages
 
-Each plugin's ZIP contains its DLL under `amd64-unicode/`, `x86-unicode/`, and
-`x86-ansi/`, with the same filename in each directory. Extract the archive into
-your NSIS `Plugins` directory.
+Each plugin's ZIP contains its DLL under `Plugins/amd64-unicode/`,
+`Plugins/x86-unicode/`, and `Plugins/x86-ansi/`, with the same filename in each
+directory. Both `LICENSE_MIT` and `LICENSE_APACHE-2.0` are included at the archive
+root, along with a SHA256 checksum file for the DLLs. Extract the archive into
+your NSIS installation directory.
 
 ## License
 

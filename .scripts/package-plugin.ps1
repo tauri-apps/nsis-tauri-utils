@@ -36,13 +36,13 @@ function New-PluginStaging {
         'x86-ansi' = 'x86-ansi/i686-pc-windows-msvc/release'
     }
 
-    # Stage each DLL under the target directory expected by NSIS.
+    # Mirror the NSIS installation layout in the archive.
     foreach ($variant in $variantBuildDirectories.GetEnumerator()) {
         $variantName = $variant.Key
         $sourceDll = Join-Path $repoRoot 'target' $variant.Value $dllFileName
-        $destinationDirectory = Join-Path $StagingDirectory $variantName
+        $destinationDirectory = Join-Path $StagingDirectory 'Plugins' $variantName
         $destinationDll = Join-Path $destinationDirectory $dllFileName
-        $archiveDllPath = "$variantName/$dllFileName"
+        $archiveDllPath = "Plugins/$variantName/$dllFileName"
 
         New-Item -ItemType Directory -Path $destinationDirectory -Force | Out-Null
         Copy-Item -LiteralPath $sourceDll -Destination $destinationDll
@@ -51,7 +51,7 @@ function New-PluginStaging {
         Write-DllChecksum -ChecksumPath $checksumPath -DllPath $archiveDllPath -Hash $hash
     }
 
-    # Stage license files alongside the plugin DLLs.
+    # Include both license files at the archive root.
     foreach ($licenseName in 'LICENSE_MIT', 'LICENSE_APACHE-2.0') {
         $sourceLicense = Join-Path $RepoRoot $licenseName
         $destinationLicense = Join-Path $StagingDirectory $licenseName
