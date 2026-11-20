@@ -9,8 +9,9 @@ license = { workspace = true }
 crate-type = ["cdylib"]
 
 [features]
-ansi = ["nsis-plugin-api/ansi"]
+default = ["unicode"]
+unicode = ["nsis-plugin/unicode"]
+ansi = ["nsis-plugin/ansi"]
 
 [dependencies]
-nsis-plugin-api = { workspace = true }
-windows-sys = { workspace = true }
+nsis-plugin = { workspace = true }

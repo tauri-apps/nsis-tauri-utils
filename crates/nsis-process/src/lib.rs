@@ -1,11 +1,13 @@
-#![no_std]
-use nsis_plugin_api::*;
-nsis_plugin!();
+#![cfg_attr(target_os = "windows", no_std)]
+use nsis_plugin::{nsis_fn, Nsis, Result};
+// The Windows test harness supplies std's panic handler and allocator.
+#[cfg(not(test))]
+nsis_plugin::nsis_plugin!();
 
 /* start-marker */
 extern crate alloc;
 
-use alloc::{borrow::ToOwned, vec, vec::Vec};
+use alloc::{borrow::ToOwned, string::String, vec, vec::Vec};
 use core::{ffi::c_void, mem, ops::Deref, ops::DerefMut, ptr};
 
 use windows_sys::{
@@ -41,129 +43,134 @@ use windows_sys::{
     },
 };
 
-/// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn FindProcess() -> Result<(), Error> {
-    let name = popstr()?;
+nsis_fn! {
+    /// Test if there is a running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
+    ///
+    /// This function takes 1 string on the stack as the parameter:
+    ///
+    /// - $1: name
+    fn FindProcess(nsis: &mut Nsis) -> Result<()> {
+        let name = nsis.stack.pop()?;
 
-    if !get_processes(&name).is_empty() {
-        push(ZERO)
-    } else {
-        push(ONE)
-    }
-}
-
-/// Test if there is a running process with the given name that belongs to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn FindProcessCurrentUser() -> Result<(), Error> {
-    let name = popstr()?;
-
-    let processes = get_processes(&name);
-
-    if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
-        if processes
-            .into_iter()
-            .any(|pid| belongs_to_user(&user_sid, pid))
-        {
-            push(ZERO)
+        if !get_processes(&name).is_empty() {
+            nsis.stack.push_int(0)
         } else {
-            push(ONE)
+            nsis.stack.push_int(1)
         }
-    // Fall back to perMachine checks if we can't get current user id
-    } else if processes.is_empty() {
-        push(ONE)
-    } else {
-        push(ZERO)
     }
 }
 
-/// Kill all running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// Returns:
-///
-/// - 0: When one or more processes matching the name were found and killed successfully
-/// - 1: When one or more processes matching the name were found but not all were killed successfully
-/// - 2: When no processes matching the name were found
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn KillProcess() -> Result<(), Error> {
-    let name = popstr()?;
+nsis_fn! {
+    /// Test if there is a running process with the given name that belongs to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
+    ///
+    /// This function takes 1 string on the stack as the parameter:
+    ///
+    /// - $1: name
+    fn FindProcessCurrentUser(nsis: &mut Nsis) -> Result<()> {
+        let name = nsis.stack.pop()?;
 
-    let processes = get_processes(&name);
+        let processes = get_processes(&name);
 
-    if processes.is_empty() {
-        return push(TWO);
-    }
-
-    if processes.into_iter().all(kill) {
-        push(ZERO)
-    } else {
-        push(ONE)
-    }
-}
-
-/// Kill all running process with the given name that belong to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
-///
-/// Returns:
-///
-/// - 0: When one or more processes matching the name were found and killed successfully
-/// - 1: When one or more processes matching the name were found but not all were killed successfully
-/// - 2: When no processes matching the name were found
-///
-/// This function takes 1 string on the stack as the parameter:
-///
-/// - $1: name
-#[nsis_fn]
-fn KillProcessCurrentUser() -> Result<(), Error> {
-    let name = popstr()?;
-
-    let processes = get_processes(&name);
-
-    if processes.is_empty() {
-        return push(TWO);
-    }
-
-    let success = if let Some(user_sid) = get_sid(GetCurrentProcessId()) {
-        processes
-            .into_iter()
-            .filter(|pid| belongs_to_user(&user_sid, *pid))
-            .all(kill)
-    } else {
-        processes.into_iter().all(kill)
-    };
-
-    if success {
-        push(ZERO)
-    } else {
-        push(ONE)
+        if let Some(user_sid) = unsafe { get_sid(GetCurrentProcessId()) } {
+            if processes
+                .into_iter()
+                .any(|pid| unsafe { belongs_to_user(&user_sid, pid) })
+            {
+                nsis.stack.push_int(0)
+            } else {
+                nsis.stack.push_int(1)
+            }
+        // Fall back to perMachine checks if we can't get current user id
+        } else if processes.is_empty() {
+            nsis.stack.push_int(1)
+        } else {
+            nsis.stack.push_int(0)
+        }
     }
 }
 
-/// Run program as unelevated user
-///
-/// This function takes 2 strings on the stack as parameters:
-///
-/// - $1: program
-/// - $2: arguments
-#[nsis_fn]
-fn RunAsUser() -> Result<(), Error> {
-    let program = popstr()?;
-    let arguments = popstr()?;
-    if run_as_user(&program, &arguments) {
-        push(ZERO)
-    } else {
-        push(ONE)
+nsis_fn! {
+    /// Kill all running process with the given name, skipping processes with the host's pid. The input and process names are case-insensitive.
+    ///
+    /// Returns:
+    ///
+    /// - 0: When one or more processes matching the name were found and killed successfully
+    /// - 1: When one or more processes matching the name were found but not all were killed successfully
+    /// - 2: When no processes matching the name were found
+    ///
+    /// This function takes 1 string on the stack as the parameter:
+    ///
+    /// - $1: name
+    fn KillProcess(nsis: &mut Nsis) -> Result<()> {
+        let name = nsis.stack.pop()?;
+
+        let processes = get_processes(&name);
+
+        if processes.is_empty() {
+            return nsis.stack.push_int(2);
+        }
+
+        if processes.into_iter().all(kill) {
+            nsis.stack.push_int(0)
+        } else {
+            nsis.stack.push_int(1)
+        }
+    }
+}
+
+nsis_fn! {
+    /// Kill all running process with the given name that belong to the current user, skipping processes with the host's pid. The input and process names are case-insensitive.
+    ///
+    /// Returns:
+    ///
+    /// - 0: When one or more processes matching the name were found and killed successfully
+    /// - 1: When one or more processes matching the name were found but not all were killed successfully
+    /// - 2: When no processes matching the name were found
+    ///
+    /// This function takes 1 string on the stack as the parameter:
+    ///
+    /// - $1: name
+    fn KillProcessCurrentUser(nsis: &mut Nsis) -> Result<()> {
+        let name = nsis.stack.pop()?;
+
+        let processes = get_processes(&name);
+
+        if processes.is_empty() {
+            return nsis.stack.push_int(2);
+        }
+
+        let success = if let Some(user_sid) = unsafe { get_sid(GetCurrentProcessId()) } {
+            processes
+                .into_iter()
+                .filter(|pid| unsafe { belongs_to_user(&user_sid, *pid) })
+                .all(kill)
+        } else {
+            processes.into_iter().all(kill)
+        };
+
+        if success {
+            nsis.stack.push_int(0)
+        } else {
+            nsis.stack.push_int(1)
+        }
+    }
+}
+
+nsis_fn! {
+    /// Run program as unelevated user
+    ///
+    /// This function takes 2 strings on the stack as parameters:
+    ///
+    /// - $1: program
+    /// - $2: arguments
+    fn RunAsUser(nsis: &mut Nsis) -> Result<()> {
+        let program = nsis.stack.pop()?;
+        let arguments = nsis.stack.pop()?;
+        if unsafe { run_as_user(&program, &arguments) } {
+            nsis.stack.push_int(0)
+        } else {
+            nsis.stack.push_int(1)
+        }
     }
 }
 
@@ -439,6 +446,19 @@ unsafe fn run_as_user(program: &str, arguments: &str) -> bool {
     }
 }
 
+fn encode_utf16(value: &str) -> Vec<u16> {
+    value.encode_utf16().chain(core::iter::once(0)).collect()
+}
+
+fn decode_utf16_lossy(bytes: &[u16]) -> String {
+    let bytes = bytes
+        .iter()
+        .position(|c| *c == 0)
+        .map(|nul| &bytes[..nul])
+        .unwrap_or(bytes);
+    String::from_utf16_lossy(bytes)
+}
+
 fn shell_execute(program_wide: &[u16], arguments: &str) -> bool {
     let arguments_wide = encode_utf16(arguments);
     let result = unsafe {
@@ -508,24 +528,44 @@ impl Drop for RevertPrivilegeOnDrop {
 mod tests {
 
     use super::*;
+    use nsis_plugin::testing::TestInstaller;
 
     #[test]
     fn find_process() {
-        let processes = get_processes("explorer.exe");
-        assert!(!processes.is_empty());
+        let mut installer = TestInstaller::stock();
+        installer.push("explorer.exe");
+        installer.call(FindProcess);
+
+        assert_eq!(installer.pop().as_deref(), Some("0"));
+        assert!(!installer.error());
     }
 
     #[test]
     fn kill_process() {
-        let processes = get_processes("something_that_doesnt_exist.exe");
-        // TODO: maybe find some way to spawn a dummy process we can kill here?
-        // This will return true on empty iterators so it's basically no-op right now
-        assert!(processes.into_iter().all(kill));
+        let mut installer = TestInstaller::stock();
+        installer.push("something_that_doesnt_exist.exe");
+        installer.call(KillProcess);
+
+        assert_eq!(installer.pop().as_deref(), Some("2"));
+        assert!(!installer.error());
     }
 
     #[test]
     fn spawn_cmd() {
-        unsafe { run_as_user("cmd", "/c timeout 3") };
+        extern crate std;
+        use alloc::string::ToString;
+
+        let systemroot = std::env::var_os("SYSTEMROOT").expect("SYSTEMROOT must be set");
+        let cmd = std::path::Path::new(&systemroot).join("System32/cmd.exe");
+
+        let mut installer = TestInstaller::stock();
+        installer.push("/c timeout 3");
+        // The elevated launch API requires an executable path with its extension.
+        installer.push(&cmd.display().to_string());
+        installer.call(RunAsUser);
+
+        assert_eq!(installer.pop().as_deref(), Some("0"));
+        assert!(!installer.error());
     }
 
     #[test]
@@ -546,7 +586,13 @@ mod tests {
 
         std::fs::copy(cmd, &cmd_out).unwrap();
 
-        assert!(unsafe { run_as_user(cmd_out.display().to_string().as_str(), "/c timeout 3") });
+        let mut installer = TestInstaller::stock();
+        installer.push("/c timeout 3");
+        installer.push(&cmd_out.display().to_string());
+        installer.call(RunAsUser);
+
+        assert_eq!(installer.pop().as_deref(), Some("0"));
+        assert!(!installer.error());
 
         let started = std::time::Instant::now();
         loop {

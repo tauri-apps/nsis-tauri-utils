@@ -22,7 +22,8 @@ jobs:
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: clippy
-      - run: cargo clippy --release --all-targets --all-features -- -D warnings
+      - run: cargo clippy --release --all-targets -- -D warnings
+      - run: cargo clippy --release --all-targets --no-default-features --features ansi -- -D warnings
 
   rustfmt:
     runs-on: windows-latest
